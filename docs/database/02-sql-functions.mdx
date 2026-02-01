@@ -1,0 +1,80 @@
+# Database Functions (RPC)
+
+This document details the key PostgreSQL functions exposed via Supabase's RPC (Remote Procedure Call) mechanism. These functions contain important business logic and are called directly from our backend services to perform complex queries and data manipulations that would be inefficient or insecure to do on the client-side.
+
+All functions are designed to be secure, respecting Row-Level Security (RLS) policies by requiring a `p_user_id` parameter to scope the query to the correct user's data.
+
+---
+
+## Memory & Search Functions
+
+### `search_memories`
+- **Purpose**: The core function for semantic search. It finds the most similar memories for a user based on a query embedding.
+- **Signature**:
+  ```sql
+  function search_memories(
+      p_user_id uuid,
+      query_embedding vector(1536),
+      similarity_threshold float default 0.78,
+      match_count int default 10,
+      filter_tags text[] default null
+  ) returns table ( ... )
+  ```
+- **How it works**: Uses the `pg_vector` extension's cosine distance operator (`<=>`) to calculate the similarity between the input `query_embedding` and the `embedding` column of the `memories` table. It only returns memories with a similarity score greater than `similarity_threshold` and can optionally filter by an array of `filter_tags`.
+- **Called by**: The `POST /api/memories/search` endpoint.
+
+### `get_memory_overview_stats`
+- **Purpose**: Gathers a variety of statistics about a user's memory set.
+- **Signature**:
+  ```sql
+  function get_memory_overview_stats(
+      p_user_id uuid
+  ) returns table (
+      total_memories bigint,
+      memories_today bigint,
+      memories_this_week bigint,
+      memories_this_month bigint,
+      average_importance real,
+      distinct_tags_count bigint,
+      distinct_topics_count bigint
+  )
+  ```
+- **How it works**: Performs several aggregate `COUNT` and `AVG` queries on the `memories` table, scoped to the user, to calculate total memories, recent additions, average importance, and counts of unique tags and topics.
+- **Called by**: The Memory statistics dashboard in the frontend.
+
+---
+
+## Tag & Topic Functions
+
+### `get_distinct_tags`
+- **Purpose**: Retrieves a simple list of all unique tags a user has created.
+- **Signature**: `function get_distinct_tags(p_user_id uuid) returns table (tag text)`
+- **How it works**: Uses `unnest` on the `tags` array in the `memories` table and returns a distinct, alphabetically sorted list.
+
+### `get_distinct_tags_with_counts`
+- **Purpose**: Gets a list of unique tags along with how many times each tag has been used.
+- **Signature**: `function get_distinct_tags_with_counts(p_user_id uuid, p_tag_limit integer DEFAULT 10) returns table (tag text, count bigint)`
+- **How it works**: Similar to `get_distinct_tags`, but also performs a `COUNT` and `GROUP BY` to get the usage count for each tag, ordered by popularity.
+- **Called by**: The tag-based navigation and filtering UI.
+
+### `get_top_topics`
+- **Purpose**: Returns the most frequently occurring topics in a user's memories.
+- **Signature**: `function get_top_topics(p_user_id uuid, p_topic_limit integer DEFAULT 10) returns table(topic text, count bigint)`
+- **How it works**: Extracts the `topic` from the `metadata` JSONB field in the `memories` table, groups them, and returns a count for each, ordered by popularity.
+- **Called by**: The topic cloud visualization component.
+
+---
+
+## Chat & Conversation Functions
+
+### `get_recent_chat_sessions_for_user`
+- **Purpose**: Fetches a list of the most recent chat sessions for a given user.
+- **Signature**: `function get_recent_chat_sessions_for_user(p_user_id UUID, p_limit INTEGER DEFAULT 15) returns table (id UUID, title TEXT, ...)`
+- **How it works**: Queries the `chat_sessions` table, filtering by `p_user_id` and ordering by the `updated_at` timestamp to get the most recently active sessions.
+- **Called by**: The sidebar component that lists recent conversations.
+
+### `get_messages_for_chat_session`
+- **Purpose**: Retrieves a paginated list of all messages within a specific chat session.
+- **Signature**: `function get_messages_for_chat_session(p_chat_session_id uuid, p_limit integer DEFAULT 20, p_offset integer DEFAULT 0) returns table ( ... )`
+- **How it works**: Selects messages from the `chat_history` table where the `chat_session_id` matches the input parameter. It supports pagination using `LIMIT` and `OFFSET`.
+- **Called by**: The main chat interface when a user opens a conversation. 

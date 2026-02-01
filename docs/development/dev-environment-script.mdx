@@ -1,0 +1,79 @@
+# Local Development Environment
+
+This guide provides a comprehensive walkthrough for setting up and running the full Liara stack on your local machine for development purposes.
+
+## Prerequisites
+
+-   **Node.js**: Version `v18` or higher is required.
+-   **Docker**: Must be installed and running to manage the local Supabase instance.
+-   **npm**: Used for all package management.
+
+## 1. Environment Configuration
+
+Before launching the application, you must configure your local environment variables.
+
+1.  Find the `.env.example` file in the project's root directory.
+2.  Create a copy of this file and name it `.env`.
+3.  Open the new `.env` file and populate the required variables:
+    *   `DATABASE_URL`: This should point to your local Supabase instance. The default is usually `postgresql://postgres:postgres@localhost:54322/postgres`.
+    *   `OPENAI_API_KEY`: Your personal API key from OpenAI.
+    *   `SUPABASE_JWT_SECRET`: The JWT secret from your local Supabase instance. You can find this by running `supabase status` after starting the services.
+
+## 2. Running the Application
+
+The entire application stack (frontend, backend, and database) is orchestrated by a single command. From the root of the project, run:
+
+```bash
+npm run liara:dev
+```
+
+This master script executes the following sequence:
+1.  **Starts Supabase**: Runs `supabase start` to launch the local Docker containers for the database, authentication, and storage.
+2.  **Starts Backend**: Navigates into the `liara-backend` directory and runs `npm run dev`, which uses `nodemon` to start the Node.js server and watch for file changes.
+3.  **Starts Frontend**: Navigates to the project root and runs `npm run dev` to launch the Vite development server for the React frontend.
+
+## 3. Accessing Local Services
+
+Once the `liara:dev` script is running, the different parts of the application will be available at the following ports:
+
+<Diagram>
+{`
+graph TD
+    subgraph "Your Local Machine"
+        A["Frontend (Vite)<br/>http://localhost:3000"]
+        B["Backend (Node.js)<br/>http://localhost:8000"]
+        C["Supabase Studio<br/>http://localhost:54323"]
+        D["Database (Postgres)<br/>localhost:54322"]
+    end
+
+    A -- "API Calls" --> B
+    B -- "DB Queries" --> D
+    
+    style A fill:#4a8a07,stroke:#fff,stroke-width:2px,color:#fff
+    style B fill:#075985,stroke:#fff,stroke-width:2px,color:#fff
+    style C fill:#3b0764,stroke:#fff,stroke-width:2px,color:#fff
+    style D fill:#365314,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+-   **Frontend Application**: `http://localhost:3000`
+-   **Backend API**: `http://localhost:8000`
+-   **Supabase Studio**: `http://localhost:54323` (A local dashboard for managing your database)
+
+### Toolchain
+- **Runtime**: Node.js v18+
+- **Package Manager**: npm
+- **Database**: Supabase (via Docker)
+- **Code Editor**: VS Code (recommended)
+
+### Environment Variables (.env)
+- `DATABASE_URL`: Points to the local Supabase instance.
+- `OPENAI_API_KEY`: Your personal OpenAI API key.
+- `SUPABASE_JWT_SECRET`: The JWT secret from your Supabase project.
+
+### Ports
+- **Frontend**: `3000`
+- **Backend**: `8000`
+- **Supabase Studio**: `54323`
+
+-data coming-

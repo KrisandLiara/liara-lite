@@ -1,0 +1,24 @@
+# Import Stages Overview
+
+This page summarizes the four conceptual stages used throughout the UI.
+
+## 1. Import
+- Select Preprocessed / Enriched files, or pick **Source** (local conversations.json)
+- Nothing is saved yet; Preview determines the next view
+
+## 2. Preprocess
+- Apply author filters (User/AI), remove code (context preserved via placeholders)
+- Save the resulting preprocessed file for enrichment
+
+## 3. Enrich
+- Generate **tags**, **summaries**, **embeddings**, optional **NER**
+- Token estimator shows conversations/messages, cost, and time
+- User‑only NER can reduce token usage by ~50%
+
+## 4. Load
+- Load enriched memories to the database (Test Mode → `test_memories`)
+
+See also:
+- [Preview Options](/app/system-overview/features/import-preview-options)
+- [Tags & NER](/app/system-overview/features/import-ner-overview)
+

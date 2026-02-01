@@ -1,0 +1,17 @@
+# Core System Modules
+
+This section breaks down the primary software modules that form the backbone of the Liara application. A module is a self-contained unit of code responsible for a specific domain of functionality. Understanding these modules is key to modifying or extending Liara's core features.
+
+Each module leverages different parts of the overall <Keyword to="/app/system-overview/architecture">System Architecture</Keyword> to achieve its goals.
+
+---
+
+### Key Modules
+
+- **<Keyword to="/app/system-overview/modules/memory-system">Memory System</Keyword>**: The heart of Liara's long-term recall. This module governs the storage, retrieval, and semantic searching of conversation memories, allowing Liara to remember past interactions.
+
+- **<Keyword to="/app/system-overview/modules/chat-system">Chat System</Keyword>**: This module manages the real-time, interactive conversation between the user and the AI. It handles the flow of messages, optimistic UI updates, and streaming responses from the AI.
+
+- **<Keyword to="/app/system-overview/modules/embedding-layer">Embedding Layer</Keyword>**: A crucial abstraction layer that handles the conversion of textual content into numerical vectors (embeddings). This is what enables the powerful semantic search capabilities of the Memory System.
+
+- **<Keyword to="/app/system-overview/modules/personality-engine">Personality Engine</Keyword>**: This module is responsible for shaping Liara's persona. It manages the system prompts and contextual information that guide the AI's tone, style, and conversational boundaries. 

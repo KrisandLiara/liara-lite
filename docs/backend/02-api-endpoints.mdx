@@ -1,0 +1,88 @@
+# API Endpoints
+
+This document outlines the main API endpoints exposed by the Node.js backend. All endpoints are prefixed with `/api`.
+
+## API Conventions
+
+-   **Base Path**: All API routes are prefixed with `/api`. For example, the `chat` route is accessible at `https://<your-domain>/api/chat`.
+-   **Authentication**: Most endpoints are protected and require a valid JWT to be passed in the `Authorization` header, as described in the <Keyword to="/app/system-overview/middleware-auth">Authentication & Middleware</Keyword> documentation.
+-   **Responses**: Standard successful responses use a `200 OK` status code. Errors are handled by our middleware and return appropriate status codes (e.g., `400`, `401`, `404`, `500`).
+
+---
+
+## Chat Endpoints
+
+*File: `src/routes/chatRoutes.js`*
+
+### `POST /chat`
+
+-   **Description**: The primary endpoint for all chat interactions. It receives the user's message, assembles context, and streams back the AI's response.
+-   **Protected**: Yes
+-   **Request Body**: `{ message: string, history: object[] }`
+-   **Response**: A streaming response of the AI's message.
+
+---
+
+## Memory Endpoints
+
+*File: `src/routes/memoryRoutes.js`*
+
+### `GET /memories/tags`
+
+-   **Description**: Retrieves a list of all unique tags associated with memories, along with their usage counts. This powers the "Tag Cloud" on the Memory Page.
+-   **Protected**: Yes
+-   **Returns**: `[{ tag: string, count: number }]`
+
+### `POST /memories/search`
+
+-   **Description**: Performs a semantic search over all memories.
+-   **Protected**: Yes
+-   **Body**: `{ query: string }`
+-   **Flow**: See the <Keyword to="/app/system-overview/modules/memory-system/embedding-pipeline">Embedding Pipeline</Keyword> for a detailed explanation.
+
+### `GET /memories/by-tag/:tag`
+
+-   **Description**: Fetches all memories associated with a specific tag.
+-   **Protected**: Yes
+-   **URL Parameter**: `tag` (The tag to search for)
+-   **Returns**: `[Memory]`
+
+---
+
+## Documentation Endpoints
+
+*File: `src/routes/docsRoutes.js`*
+
+These are special, unprotected endpoints used to pull live data into this documentation site.
+
+### `GET /docs/schema`
+
+-   **Description**: Reads the `docs/system/current_schema.sql` file and returns its content. This is used by the <Keyword to="/app/system-overview/database/full-schema">Full Schema Dump</Keyword> page.
+-   **Protected**: No
+-   **Returns**: A string containing the raw SQL schema.
+
+—
+---
+
+## User Endpoints
+
+*File: `src/routes/userRoutes.js`*
+
+### `GET /user/profile`
+
+-   **Description**: Retrieves the profile information for the currently authenticated user.
+-   **Protected**: Yes
+-   **Returns**: A user profile object `{ id, username, full_name, avatar_url, website, role }`.
+
+### `PUT /user/profile`
+
+-   **Description**: Updates the profile information for the currently authenticated user.
+-   **Protected**: Yes
+-   **Request Body**: `{ username?: string, full_name?: string, avatar_url?: string, website?: string }`
+-   **Returns**: The updated user profile object. 
+
+## Related
+
+- <Keyword to="/app/system-overview/backend/01-server-overview">Server Overview</Keyword>
+- <Keyword to="/app/system-overview/features/import-pipeline-ui">Import Pipeline UI</Keyword>
+- <Keyword to="/app/system-overview/data-flow/import-pipeline">Import Pipeline Data Flow</Keyword>

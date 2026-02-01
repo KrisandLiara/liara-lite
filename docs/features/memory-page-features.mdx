@@ -1,0 +1,49 @@
+---
+title: "Memory Page Features"
+description: "An overview of the features available on the Memory Page."
+---
+
+import { Card } from "@/components/ui/card";
+
+## Tag Explorer & Multi-Stage Search
+
+The Memory Page includes a powerful Tag Explorer to help you navigate your memories thematically. You can access it by clicking the **"By Tag"** link in the Memory Menu sidebar. The explorer uses a new multi-stage search process to give you more control.
+
+### 1. The Tag Cloud
+
+Upon entering the Tag Explorer, you are presented with a **Tag Cloud**.
+
+- **Visual Weight**: Tags are sized based on their frequency. More frequently used tags appear larger, allowing you to see your most common themes at a glance.
+- **Interactivity**: Every tag in the cloud is clickable, acting as the starting point for your search.
+
+### 2. Viewing Memories by Tag (Multi-Stage Search)
+
+Clicking on any tag in the cloud takes you to a dedicated view that begins a controlled, multi-stage search.
+
+-   **Stage 1: Exact Tag Match (Default)**
+    -   The view initially loads and displays **only** memories that are explicitly assigned the selected tag.
+    -   This provides a precise, narrow set of results based on your deliberate categorization.
+
+-   **Stage 2: Keyword Search (Optional)**
+    -   If you want to broaden the search, you can click the **"Keyword"** button.
+    -   This performs a new search, finding all memories where the tag's name appears as a keyword in the content or summary.
+
+-   **Stage 3: Semantic Search (Optional)**
+    -   To cast the widest net, you can click the **"Semantic"** button.
+    -   This uses vector embeddings to find memories that are conceptually related, even if they don't share any keywords.
+    -   You can use the **Similarity** slider to adjust how closely related the results should be.
+
+This staged approach ensures that your initial view is focused and relevant, while still providing powerful tools for deeper exploration when you need them.
+
+<Card className="p-4 bg-slate-800/50 my-4">
+  **How it works:** The size of each tag is calculated based on its total count relative to the most and least frequent tags in your memory database.
+</Card>
+
+### Viewing Memories by Tag
+
+Clicking on any tag in the cloud will take you to a dedicated view that lists all of the memories associated with that specific tag. This allows you to easily review all your thoughts and notes on a particular topic.
+
+From this view, you can:
+- See a chronological list of all memories for the tag.
+- Click on any memory card to view its full details.
+- Delete memories. 

@@ -1,0 +1,30 @@
+# Backend
+
+This document describes the backend architecture.
+
+The backend is a <Keyword>Node.js</Keyword> server using the <Keyword>Express</Keyword> framework. It serves as the central hub connecting the frontend, database, and external AI services. Its primary responsibilities include handling API requests, managing user authentication, and processing all business logic related to chat and memory.
+
+<Diagram>{`
+graph TD;
+    subgraph "Backend Source (src)"
+        A(index.js) --> B{"Middleware"};
+        A --> C{"Routes"};
+        C --> D{"Controllers"};
+        D --> E{"Services"};
+    end
+
+    style B fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style C fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff
+    style D fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+    style E fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+`}</Diagram>
+
+## Directory Structure
+
+- **`/middleware`**: Contains Express middleware functions, such as the `auth.js` middleware which protects routes by verifying Supabase JWTs. This is the first line of defense for secure endpoints.
+
+- **`/routes`**: Defines the API endpoints for the application. Each file in this directory corresponds to a major feature (e.g., `chatSessionRoutes.js`, `memoryRoutes.js`) and maps HTTP methods (GET, POST, etc.) to the appropriate controller logic.
+
+- **`index.js`**: This is the entry point of the server. It initializes the Express application, applies global middleware (like CORS, and body-parser), and dynamically mounts all the routers from the `/routes` directory.
+
+- **`clients.js`**: A utility module for initializing and exporting clients for external services. This ensures that connections, such as the one to the Supabase database, are managed in a single, reusable place. 

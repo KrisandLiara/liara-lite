@@ -1,0 +1,48 @@
+# Supabase JWT Authentication
+
+This document explains how Liara uses JSON Web Tokens (JWTs) from Supabase for authentication.
+
+The authentication process in Liara is handled almost entirely by the <Keyword to="https://supabase.com/docs/guides/auth">Supabase Auth</Keyword> service. This provides a secure and scalable solution for user management, leveraging PostgreSQL's built-in capabilities.
+
+The core of this system is the use of JSON Web Tokens (JWTs). When a user logs in, they are issued a JWT, which is then sent with every subsequent request to the Supabase backend. This token contains the user's ID and is cryptographically signed, allowing the backend to verify the user's identity and enforce permissions without needing to re-authenticate them on every call.
+
+## The Flow Explained
+
+<Diagram caption="A sequence diagram illustrating the sign-up and login process.">
+{`
+sequenceDiagram
+    participant Client as Client App (React)
+    participant Supabase as Supabase Auth
+    participant Database as PostgreSQL Database
+
+    Client->>Supabase: 1. User signs up with email/password
+    Supabase->>Database: Creates new user in 'auth.users' table
+    Database-->>Supabase: Returns user object
+    Supabase-->>Client: Returns session object with JWT
+
+    Note over Client, Database: Later, when the user logs in...
+
+    Client->>Supabase: 2. User logs in with email/password
+    Supabase->>Database: Verifies credentials against 'auth.users'
+    Database-->>Supabase: Confirms credentials
+    Supabase-->>Client: Returns a new session object with a fresh JWT
+
+    Note over Client, Database: On subsequent API calls...
+
+    Client->>Supabase: 3. Makes API call with JWT in Authorization header
+    Supabase->>Supabase: Verifies JWT signature and expiry
+    alt Is Valid
+        Supabase->>Database: Executes request in user's context (auth.uid())
+        Database-->>Supabase: Returns data based on RLS policies
+        Supabase-->>Client: Returns requested data
+    else Is Invalid
+        Supabase-->>Client: Returns 401 Unauthorized error
+    end
+`}
+</Diagram>
+
+### Key Steps
+
+1.  **Sign-up**: A new user is created in the `auth.users` table. Supabase handles the password hashing and secure storage. A JWT is immediately returned to the client, logging them in.
+2.  **Login**: The user's credentials are verified. If they are correct, Supabase generates a new JWT and returns it to the client. This token is then stored in the browser's local storage for the duration of the session.
+3.  **Authenticated Requests**: For any request to the Supabase API (either directly from the client or from an Edge Function), the JWT is included in the `Authorization: Bearer <token>` header. Supabase automatically inspects this token. If it's valid, the request proceeds. If not, it's rejected. The user's ID (`auth.uid()`) is then available in database queries to enforce Row Level Security. 

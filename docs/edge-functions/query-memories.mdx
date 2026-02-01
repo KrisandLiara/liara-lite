@@ -1,0 +1,15 @@
+# Edge Function: query-memories
+
+This edge function answers questions using only the user’s stored memories (RAG).
+
+## Request
+
+```
+POST /edge-functions/query-memories
+{ "question": "string", "userId": "uuid" }
+```
+
+## Related
+
+- <Keyword to="/app/system-overview/modules/memory-system/embedding-pipeline">Embedding Pipeline</Keyword>
+- <Keyword to="/app/system-overview/backend/02-api-endpoints">API Endpoints</Keyword>

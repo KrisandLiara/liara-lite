@@ -1,0 +1,30 @@
+# CLI Tools & Scripts
+
+This page provides a reference for the custom `npm` scripts and CLI commands used in the Liara development workflow.
+
+## Core Scripts
+
+These are the standard scripts for managing the frontend application.
+
+-   `npm run dev`: Starts the Vite frontend development server on `localhost:3000`.
+-   `npm run build`: Compiles and bundles the frontend assets for production.
+-   `npm run preview`: Serves the production build locally to test before deployment.
+
+## `liara:` Development Scripts
+
+These scripts, defined in `package.json`, are designed to orchestrate the entire local development environment.
+
+-   `npm run liara:dev`: The primary command for local development. It concurrently starts the frontend, the backend (`liara-backend`), and the local Supabase instance.
+-   `npm run liara:stop`: A utility script to gracefully stop all services started by `liara:dev` and remove the associated Docker containers.
+
+## Supabase CLI Commands
+
+These commands are essential for managing the local database instance and handling migrations. They should be run from the root of the project.
+
+-   `supabase start`: Starts all the Docker services required for Supabase (Postgres, GoTrue, etc.).
+-   `supabase stop`: Stops the local Supabase services.
+-   `supabase db reset`: Resets the local database to a clean state and applies all migrations from the `supabase/migrations` directory. This is crucial for testing schema changes.
+-   `supabase migration new <name>`: Creates a new, timestamped migration file in the `supabase/migrations` directory.
+-   `supabase db dump -f <file_path>`: Dumps the current schema of the local database to a specified file.
+
+-data coming- 

@@ -1,0 +1,40 @@
+import { Keyword } from '../MDXComponents';
+
+# Documentation Writing Workflow
+
+This document outlines the principles and workflow for creating and maintaining the Liara Knowledge Base. The goal is to create a "Don't Repeat Yourself" (DRY) system for documentation.
+
+Instead of one giant document, we place information where it logically belongs and then interlink it.
+
+---
+
+## The 5 Core Locations for Knowledge
+
+When documenting a new feature, break the information down and place it into one or more of these five locations.
+
+#### 1. The User-Facing Module
+
+-   **Where**: The user-facing feature.
+-   **Example:** The user-facing "Tag Cloud" goes in the <Keyword to="/app/system-overview/modules/memory-system">Memory System</Keyword> doc.
+
+#### 2. The Backend Module
+
+-   **Where**: The code that makes it happen.
+-   **Example:** The `GET /api/memories/tags` endpoint is detailed in the <Keyword to="/app/system-overview/backend/02-api-endpoints">API Endpoints</Keyword> doc.
+
+#### 3. The Database Schema
+
+-   **Where**: The shape of the data.
+-   **Example:** The `tags text[]` column is defined in the `memories` table within the <Keyword to="/app/system-overview/database/01-schema-and-tables">Schema & Tables</Keyword> doc.
+
+#### 4. The Data Flow
+
+-   **Where**: The sequence of events.
+-   **Example:** The process of searching memories is in the <Keyword to="/app/system-overview/data-flow/01-main">Data Flow</Keyword> doc, while the `search_memories` function is in the <Keyword to="/app/system-overview/database/02-sql-functions">SQL Functions</Keyword> doc.
+
+#### 5. The Future (Roadmap)
+
+-   **Where**: The grand vision.
+-   **Example:** The "AI Dream Mode" for tags lives in the <Keyword to="/app/system-overview/roadmap/01-smart-tag-view">Roadmap</Keyword>.
+
+By following this pattern, the documentation becomes a web of interconnected, context-specific information, making it easier to maintain and navigate. 

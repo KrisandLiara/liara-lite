@@ -1,0 +1,133 @@
+import { DiagramSpoiler } from '@/components/system-overview/DiagramSpoiler';
+
+# Database: Schema and Tables
+
+This document provides a detailed overview of the core tables in the PostgreSQL database.
+
+## Core Tables
+
+### `user_profiles`
+Stores essential information about each registered user, forming the central identity table.
+- **Key Columns**: The `id` is a UUID that acts as the primary key and directly maps to an entry in Supabase's `auth.users` table. The `username` provides a public-facing identifier, while the `role` enum (`admin`, `user`, `guest`) governs authorization levels across the application.
+- **RLS**: Row-Level Security is strictly enforced. A user can only ever view or modify their own profile row, ensuring data privacy.
+
+<DiagramSpoiler title="Show/Hide user_profiles Schema">
+| Column | Type | Description |
+|---|---|---|
+| `id` | `uuid` (Primary Key) | Foreign key to `auth.users.id`. |
+| `updated_at` | `timestamp` | The last time the profile was updated. |
+| `username` | `text` | The user's chosen display name. |
+| `full_name` | `text` | The user's full name. |
+| `avatar_url` | `text` | URL for the user's profile picture. |
+| `website` | `text` | The user's personal or professional website. |
+| `role` | `user_role` (Enum) | The user's role (`admin`, `user`, or `guest`). |
+</DiagramSpoiler>
+
+### `chat_sessions`
+This table acts as a container for each distinct conversation a user has. It holds high-level metadata about the conversation.
+- **Key Columns**: `id` is the primary key. `user_id` links the session to a user, and `title` gives the conversation a human-readable name.
+- **RLS**: Enabled. Users can only access sessions they own.
+
+<DiagramSpoiler title="Show/Hide chat_sessions Schema">
+| Column | Type | Description |
+|---|---|---|
+| `id` | `uuid` (Primary Key) | Unique identifier for the chat session. |
+| `user_id` | `uuid` | Foreign key to `user_profiles.id`. |
+| `guest_session_id` | `uuid` | For sessions initiated by non-authenticated users. |
+| `title` | `text` | The user-defined or AI-generated title of the conversation. |
+| `status`| `text` | The status of the session (e.g., 'active', 'archived'). |
+| `created_at` | `timestamp` | Timestamp of when the session was created. |
+| `updated_at` | `timestamp` | Timestamp of the last activity in the session. |
+</DiagramSpoiler>
+
+### `chat_messages`
+Stores every individual message from all conversations, forming a complete transcript of user-AI interactions. This table replaced the legacy `chat_history` table to better support guest users and improve indexing.
+- **Key Columns**: The `id` is the primary key for the message. The `chat_session_id` is a UUID that groups messages into a single, continuous conversation thread. The `role` column ('user' or 'assistant') is critical for distinguishing who said what.
+- **RLS**: Enabled. Users can only read messages from sessions they are a part of.
+
+<DiagramSpoiler title="Show/Hide chat_messages Schema">
+| Column | Type | Description |
+|---|---|---|
+| `id` | `uuid` (Primary Key) | Unique identifier for the message. |
+| `chat_session_id` | `uuid` | Foreign key to `chat_sessions.id`, linking it to a conversation. |
+| `user_id` | `uuid` | Foreign key to `user_profiles.id`. Can be NULL for guest users. |
+| `guest_session_id` | `uuid` | Identifier for messages from non-authenticated guest sessions. |
+| `role` | `text` | The sender's role ('user', 'assistant', or 'system'). |
+| `content` | `text` | The actual text content of the message. |
+| `created_at` | `timestamp` | Timestamp of when the message was created. |
+| `metadata` | `jsonb` | Any extra data associated with the message. |
+</DiagramSpoiler>
+
+### `memories`
+The core table for Liara's long-term, semantic memory. This is where distilled facts and user preferences are stored.
+- **Key Columns**: `user_id` links the memory to a specific user. `content` stores the textual information of the memory itself. The `embedding` column contains a 1536-dimension vector that represents the semantic meaning of the content, enabling similarity searches.
+- **RLS**: Enabled. Like other core tables, users can only access memories they own.
+
+<DiagramSpoiler title="Show/Hide memories Schema">
+| Column | Type | Description |
+|---|---|---|
+| `id` | `uuid` (Primary Key) | Unique identifier for the memory. |
+| `created_at` | `timestamp` | Timestamp when the memory record was created. |
+| `updated_at` | `timestamp` | Timestamp when the memory was last updated. |
+| `user_id` | `uuid` | Foreign key to `user_profiles.id`. |
+| `content` | `text` | The textual content of the memory. |
+| `embedding` | `vector(1536)` | The vector embedding for semantic search. |
+| `importance`| `real` | A score from 0.0 to 1.0 indicating memory importance. |
+| `tags` | `text[]` | An array of tags for categorization. |
+| `metadata` | `jsonb` | Additional structured data about the memory. |
+| `summary` | `text` | A brief summary of the memory content. |
+| `topic` | `text` | The general topic of the memory. |
+| `sentiment` | `text` | The emotional tone of the memory (e.g., 'positive', 'neutral'). |
+| `type` | `text` | The type of memory (e.g., 'fact', 'preference', 'event'). |
+| `pinned` | `boolean` | Whether the memory is pinned by the user. |
+| `source_type` | `text` | Where the memory originated from (e.g., 'chat', 'import'). |
+| `source_chat_id` | `uuid` | If from a chat, the ID of the source message. |
+| `reference_links` | `text[]` | Array of URLs or references related to the memory. |
+| `conversation_title` | `text` | The title of the conversation the memory belongs to. |
+| `conversation_start_time` | `timestamp` | Start time of the source conversation. |
+| `role` | `text` | Role of the speaker if the memory is from a direct quote. |
+</DiagramSpoiler>
+
+## Entity Relationship Diagram
+
+This diagram shows how the core tables relate to each other.
+
+<Diagram>
+{`
+erDiagram
+    user_profiles ||--|{ chat_sessions : "has"
+    chat_sessions ||--|{ chat_messages : "contains"
+    user_profiles ||--|{ memories : "has"
+    chat_sessions }|..|{ memories : "can source"
+
+    user_profiles {
+        uuid id PK "User's unique ID from auth.users"
+        text username "Public display name"
+        user_role role "Enum: admin, user, guest"
+    }
+
+    chat_sessions {
+        uuid id PK "Primary key for a session"
+        uuid user_id FK "Owner of the session"
+        text title "Title of the conversation"
+        text status "active, archived"
+    }
+
+    chat_messages {
+        uuid id PK "Primary key for a message"
+        uuid chat_session_id FK "Belongs to a chat session"
+        text role "user, assistant, system"
+        text content "The message text"
+    }
+
+    memories {
+        uuid id PK "Primary key for a memory"
+        uuid user_id FK "Owner of the memory"
+        text content "The memory text"
+        vector embedding "For semantic search"
+        uuid source_chat_id FK "Can originate from a chat"
+    }
+`}
+</Diagram>
+
+-data coming- 

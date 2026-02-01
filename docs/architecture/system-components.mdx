@@ -1,0 +1,24 @@
+# System Components
+
+This document describes the main components of the system.
+
+The Liara application is composed of several key components that work together to provide a seamless voice chat and memory management experience. This page provides a high-level summary. For more detailed information, please see the specific pages for each component.
+
+### <Keyword to="/app/system-overview/architecture/frontend">Frontend</Keyword>
+- **Technology**: Built with <Keyword>React</Keyword> and <Keyword>Vite</Keyword>.
+- **Responsibilities**: Manages the user interface, real-time chat display, and all user interactions.
+
+### <Keyword to="/app/system-overview/architecture/backend">Backend</Keyword>
+- **Technology**: A <Keyword>Node.js</Keyword> server using <Keyword>Express</Keyword>.
+- **Responsibilities**: Handles API requests, manages user authentication, and serves as the central hub connecting all services.
+
+### <Keyword to="/app/system-overview/architecture/database">Database</Keyword>
+- **Provider**: <Keyword>Supabase</Keyword> (PostgreSQL).
+- **Responsibilities**: Stores all persistent data, including users, chat sessions, and long-term memories.
+
+### AI Services
+- **Provider**: <Keyword>OpenAI</Keyword>.
+- **Responsibilities**:
+    - **Text Generation**: Powers the core chat completions.
+    - **Embeddings**: Creates vector embeddings for semantic search.
+    - **Summarization**: Generates titles and summaries for chat sessions. 

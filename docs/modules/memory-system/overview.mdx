@@ -1,0 +1,70 @@
+# Memory System Overview
+
+The Memory System is the core of Liara's ability to learn and retain information from conversations. It's designed to create a persistent, long-term memory that allows the AI to recall relevant context, understand user preferences, and maintain continuity across multiple interactions.
+
+The lifecycle of a memory can be broken down into two main stages: **Ingestion** and **Recall**.
+
+## Memory Ingestion Flow
+
+This diagram illustrates how new information is processed and stored in the database.
+
+<Diagram>
+{`
+graph TD
+    subgraph Conversation
+        A[User & AI Messages]
+    end
+    
+    subgraph "Backend Processing (Async)"
+        B{Memory Consolidation}
+        C[1. Identify Key Facts & Topics]
+        D[2. Generate Vector Embedding]
+        E[3. Tag & Categorize]
+    end
+
+    subgraph "Database Storage"
+        F["'memories' Table"]
+    end
+
+    A -- "End of Conversation" --> B;
+    B --> C;
+    C --> D;
+    D --> E;
+    E -- "Store Memory Record" --> F;
+`}
+</Diagram>
+
+1.  **Conversation Analysis:** After a conversation, an asynchronous background process analyzes the transcript.
+2.  **Information Extraction:** The system identifies key pieces of information, such as facts, user preferences, or important topics discussed.
+3.  **Processing & Enrichment:**
+    *   **Embedding:** Each extracted memory is converted into a vector embedding using an AI model. This allows for <Keyword to="/app/system-overview/modules/memory-system/embedding-pipeline">semantic search</Keyword> later.
+    *   **Tagging:** The system automatically applies relevant <Keyword to="/app/system-overview/modules/memory-system/tag-cloud">tags and topics</Keyword> to categorize the memory.
+4.  **Storage:** The final, enriched memory object—containing the original text, the embedding, and all metadata—is stored in the `memories` table in the <Keyword to="/app/system-overview/database/01-schema-and-tables">database</Keyword>.
+
+## Memory Recall
+
+Memory recall is the process of retrieving stored information to use as context in a new conversation. This is explored in more detail in the <Keyword to="/app/system-overview/modules/memory-system/recall-modes">Recall Modes</Keyword> section. The goal is to find the most relevant pieces of long-term memory to inform the AI's next response.
+
+<Diagram>
+{`
+graph TD
+    subgraph "User Interaction"
+        A[User sends new message]
+    end
+
+    subgraph "Backend Recall Logic"
+        B{"1. Analyze message for recall triggers"}
+        C["2. Perform multi-strategy search<br/>(Semantic, Tag, Temporal)"]
+        D["3. Rank & select top memories"]
+    end
+    
+    subgraph "AI Prompt"
+        E["4. Inject memories into context"]
+    end
+    
+    A --> B --> C --> D --> E
+
+`}
+</Diagram>
+
+The recall process is triggered automatically with every new user message. The backend analyzes the message and performs a hybrid search to find the most relevant memories, which are then injected into the prompt sent to the LLM. 

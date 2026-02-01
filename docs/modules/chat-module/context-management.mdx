@@ -1,0 +1,55 @@
+# Context Management
+
+**Context Management** is one of the most critical aspects of the chat module. A Large Language Model (LLM) has a finite "context window," a limit to the amount of information it can consider at one time. Our challenge is to fill this window with the most relevant information possible to ensure a coherent and intelligent conversation.
+
+The system must balance several sources of context, each with a different priority.
+
+## The Context Window Funnel
+
+Think of the context window as a funnel. We have a large pool of potential information, and we must strategically select the most important pieces to include in the final prompt sent to the LLM.
+
+<Diagram>
+{`
+graph TD
+    subgraph "Available Information"
+        A[All Chat History]
+        B[All Stored Memories]
+        C[Core Personality & System Prompt]
+        D[User & Environment Metadata]
+    end
+    
+    subgraph "Filtering & Selection Logic"
+        E{"Context Manager"}
+    end
+
+    subgraph "Final Prompt (Limited Size)"
+        F["Prioritized Context"]
+    end
+
+    A -- "Selects most recent messages" --> E
+    B -- "Selects most relevant memories" --> E
+    C -- "Always included" --> E
+    D -- "Selects relevant metadata" --> E
+    E --> F
+
+    style F fill:#004d40,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+### Prioritization Strategy:
+
+1.  **Core Personality (Highest Priority):** The <Keyword to="/app/system-overview/modules/chat-module/personality-integration">system prompt and personality</Keyword> are almost always included, as they are fundamental to the AI's identity.
+2.  **User's Latest Message:** The most recent user input is essential.
+3.  **Relevant Long-Term Memories:** Memories retrieved via <Keyword to="/app/system-overview/modules/memory-system/recall-modes">semantic search</Keyword> are prioritized highly, as they represent the most relevant long-term context.
+4.  **Recent Chat History:** The last few messages of the current conversation are included to maintain short-term conversational flow. This is often truncated to fit the remaining space.
+5.  **Metadata:** Other useful information, like the current date and time, may be included if space permits.
+
+### Context Sources
+| Source | Type | Description |
+|---|---|---|
+| **Chat History** | Short-Term | The last N messages from the current conversation. |
+| **Memories** | Long-Term | Semantically relevant memories retrieved from the database. |
+| **Metadata** | Static | Information like the current date, time, and user profile data. |
+| **Personality** | Foundational | The core system prompt and user-specific personality settings. |
+
+-data coming- 

@@ -1,0 +1,88 @@
+# Liara Design System Showcase
+
+This document demonstrates the unified design system implemented across the Liara application.
+
+## 🎨 Color Palette
+
+### Brand Colors
+- **Primary**: `#9b87f5` - Liara purple (main brand color)
+- **Secondary**: `#7E69AB` - Darker purple (secondary actions)
+- **Accent**: `#38bdf8` - Sky blue (interactive elements)
+
+### Background System
+- **Primary**: `#0f172a` (slate-900) - Main app background (like chat)
+- **Secondary**: `#1e293b` (slate-800) - Card/panel backgrounds  
+- **Tertiary**: `#334155` (slate-700) - Elevated surfaces
+
+### Status Colors
+- **Success**: Emerald theme (`#10b981` with `#064e3b` background)
+- **Warning**: Amber theme (`#f59e0b` with `#451a03` background) 
+- **Error**: Red theme (`#ef4444` with `#7f1d1d` background)
+- **Info**: Blue theme (`#3b82f6` with `#1e3a8a` background)
+
+## 🔧 Implementation
+
+### Centralized Theme
+All colors are now managed through `/src/lib/theme/liara-theme.ts`:
+
+```typescript
+import { LiaraTheme, liaraClasses } from '@/lib/theme/liara-theme';
+
+// Use predefined classes
+<div className={liaraClasses.bgPrimary}>
+  <span className={liaraClasses.textSecondary}>Content</span>
+</div>
+
+// Or access theme values directly
+const theme = LiaraTheme.background.primary;
+```
+
+### Consistent Backgrounds
+- **All pages** now use `bg-slate-900` (Liara primary background)
+- **Cards and panels** use `bg-slate-800` 
+- **Elevated elements** use `bg-slate-700`
+
+### Unified Components
+- **Token Cost Estimator**: Now uses emerald/sky theme
+- **Console**: Consistent dark theme with proper contrast
+- **Test Mode Switch**: Matches amber highlight system
+- **Status Badges**: Consistent color coding across all components
+
+## 🎯 Benefits
+
+### For Users
+- **Visual Consistency**: Same look and feel across all pages
+- **Better Readability**: Proper contrast ratios and text hierarchy
+- **Professional Appearance**: Cohesive design language
+
+### For Developers  
+- **Maintainability**: Single source of truth for all colors
+- **Scalability**: Easy to add new themes or modify existing ones
+- **Type Safety**: TypeScript definitions for all theme values
+- **Reusability**: Predefined classes for common patterns
+
+## 📱 Pages Updated
+
+### ✅ Chat Interface
+- Already had the perfect slate-900 background
+- Serves as the foundation for other pages
+
+### ✅ Import Pipeline  
+- Updated to use unified background
+- Token estimator redesigned with emerald/sky theme
+- Console integrated with dark theme
+
+### ✅ System Overview
+- Maintains amber highlights for documentation
+- Consistent card backgrounds and text colors
+
+### ✅ Memory System
+- Will inherit the unified theme automatically
+- Future updates will use centralized theme values
+
+## 🚀 Future Enhancements
+
+- **Theme Switching**: Easy to add light/dark mode toggle
+- **Brand Customization**: Simple to modify for different deployments  
+- **Component Variants**: Standardized variations for different contexts
+- **Animation System**: Consistent transitions and micro-interactions 

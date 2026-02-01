@@ -1,0 +1,56 @@
+# Retrieval & Tool Use Policy
+
+This document outlines the policies and logic governing how Liara decides when to use tools, what tools to use, and how to handle the retrieved data.
+
+## Tool Use Decision Flow
+
+Liara is granted access to a set of "tools" (pre-defined functions) that allow her to interact with external data sources, such as her own memory database or third-party APIs. The LLM decides which tool to use based on the user's intent.
+
+<Diagram>
+{`
+graph TD
+    A["User's Prompt"] --> B{Does the prompt<br/>require external data?};
+    B -- No --> C["Generate response<br/>using only internal knowledge"];
+    
+    B -- Yes --> D{Determine User Intent};
+    D -- "Asking about the past?" --> E["Choose Tool:<br/>&#96;search_memories&#96;"];
+    D -- "Needs current info?" --> F["Choose Tool:<br/>&#96;web_search&#96;"];
+    D -- "Interacting with DB?" --> G["Choose Tool:<br/>&#96;database_query&#96;"];
+    
+    subgraph "Tool Execution"
+        direction LR
+        E --> H{Input: search_query};
+        F --> I{Input: search_term};
+        G --> J{Input: sql_query};
+    end
+
+    H & I & J --> K["Execute Tool &<br/>Return Data"];
+    K --> L["Inject data into<br/>prompt context"];
+    L --> M["Generate final response<br/>for the user"];
+    
+    C & M --> Z["Final Output"];
+
+    classDef tool fill:#8a1e3a,stroke:#fff,stroke-width:2px,color:#fff;
+    class E,F,G tool;
+`}
+</Diagram>
+
+## Core Policies
+
+1.  **Prioritize Internal Knowledge**: Tools should only be used when the user's request cannot be satisfactorily answered by the LLM's general knowledge or the immediate conversation context.
+
+2.  **Intent-Based Selection**: The choice of tool must directly map to the user's inferred intent.
+    -   Use `search_memories` for questions about past conversations or user preferences.
+    -   Use `web_search` for queries requiring real-time or recent information.
+    -   Use `database_query` only for explicit requests about the database schema or contents (with strict read-only limitations).
+
+3.  **Economical Use**: Avoid using multiple tools for a single prompt unless absolutely necessary to fulfill a complex request. Always start with the most likely tool.
+
+4.  **Graceful Failure**: If a tool fails or returns no data, the model should inform the user that it was unable to retrieve the information, rather than hallucinating an answer. Example: "I tried searching my memory for that, but I couldn't find anything."
+
+## Safety & Guardrails
+-   All database access is strictly **read-only**. The LLM cannot write or modify the database schema or content via tools.
+-   Tool inputs are sanitized to prevent injection attacks.
+-   API usage is monitored for rate limits and cost control.
+
+-data coming- 

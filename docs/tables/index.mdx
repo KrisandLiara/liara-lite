@@ -1,0 +1,112 @@
+# Database Tables
+
+This section provides a detailed breakdown of the most important tables in the Liara database. Understanding the structure of these tables and their relationships is fundamental to understanding how data is persisted and managed throughout the system.
+
+Each page below details the purpose of a table and the significance of its most important columns.
+
+---
+
+### Core Tables
+
+- **<Keyword to="/app/system-overview/tables/chat-sessions">chat_sessions</Keyword>**: Contains the metadata for each individual conversation thread, such as its title and status.
+
+- **<Keyword to="/app/system-overview/tables/chat-history">chat_history</Keyword>**: A chronological log of every message exchanged within a chat session.
+
+- **<Keyword to="/app/system-overview/tables/memories">memories</Keyword>**: The heart of the long-term memory system. This table stores semantic information and the vector embeddings used for similarity searches.
+
+- **<Keyword to="/app/system-overview/tables/hard-memory-entries">hard_memory_entries</Keyword>**: A specialized table for storing explicit, factual data that should be treated as ground truth.
+
+- **<Keyword to="/app/system-overview/tables/user-profiles">user_profiles</Keyword>**: Stores application-specific information about each user, extending the built-in Supabase `auth.users` table.
+
+<Diagram caption="A diagram showing the relationships between the most important database tables. Not all tables or columns are shown for clarity.">
+  {`erDiagram
+    "auth.users" {
+        uuid id PK "User ID from Supabase Auth"
+    }
+
+    "user_profiles" {
+        uuid id PK,FK "Links to auth.users.id"
+        text username
+        timestamp created_at
+    }
+
+    "guest_sessions" {
+        uuid id PK
+        uuid converted_to_user_id FK "Can be null"
+        timestamp last_active
+    }
+
+    "chat_sessions" {
+        uuid id PK
+        uuid user_id FK
+        uuid guest_session_id FK
+        text title
+        text status
+    }
+
+    "chat_history" {
+        uuid id PK
+        uuid chat_session_id FK
+        text role
+        text content
+    }
+
+    "memories" {
+        uuid id PK
+        uuid user_id FK
+        text content
+        vector embedding "1536-dim"
+        real importance
+        text summary
+        text topic
+        text sentiment
+        text source_type
+        jsonb metadata
+        timestamp created_at
+        text type
+        text source
+        bool pinned
+        text[] tags
+        uuid source_chat_id
+        uuid message_id
+        uuid parent_id
+        uuid related_to
+    }
+
+    "hard_memory_entries" {
+        uuid id PK
+        uuid user_id FK
+        text fact
+        text topic
+        real importance
+        bool pinned
+    }
+
+    "memory_relationships" {
+        uuid id PK
+        uuid source_memory_id FK
+        uuid target_memory_id FK
+        text relationship_type
+        real strength
+    }
+
+    "personality" {
+        uuid id PK
+        uuid user_id FK
+        text aspect_type
+        text name
+        vector embedding
+    }
+
+    "auth.users" ||--o{ "user_profiles" : "has profile"
+    "auth.users" ||..o{ "guest_sessions" : "converts to"
+    "auth.users" ||--|{ "chat_sessions" : "owns"
+    "auth.users" ||--|{ "memories" : "owns"
+    "auth.users" ||--|{ "hard_memory_entries" : "owns"
+    "auth.users" ||--|{ "personality" : "has"
+
+    "guest_sessions" ||..o{ "chat_sessions" : "can have"
+    "chat_sessions" ||--|{ "chat_history" : "contains"
+    "memories" }o--o{ "memory_relationships" : "relates"
+`}
+</Diagram>

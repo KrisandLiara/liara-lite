@@ -1,0 +1,81 @@
+# Authentication & Middleware
+
+Middleware functions are a cornerstone of the Express framework. They are functions that have access to the request object (`req`), the response object (`res`), and the `next` function in the application's request-response cycle. In this project, middleware is primarily used for **authentication** and **authorization**.
+
+## Authentication Flow
+
+Our authentication strategy relies on **JSON Web Tokens (JWTs)** provided by Supabase. When a user logs in via the frontend, Supabase returns a JWT. This token is then included in the `Authorization` header for all subsequent API requests.
+
+The backend uses a dedicated authentication middleware to protect sensitive routes.
+
+<Diagram>
+{`
+graph TD
+    A[Frontend Request with 'Authorization: Bearer <JWT>'] --> B{API Endpoint};
+    subgraph "Auth Middleware"
+        C["Extract JWT from Header"];
+        D["Verify JWT with Supabase</br> (Checks signature & expiration)"];
+        E["Fetch User Profile</br> from Supabase"];
+        F["Attach user object to 'req'"];
+    end
+
+    B -- "Protected Route" --> C;
+    C --> D;
+    D -- "If Invalid" --> G[Response: 401 Unauthorized];
+    D -- "If Valid" --> E;
+    E --> F;
+    F --> H["Next() -> Route Handler"];
+
+    style G fill:#c0392b,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+### Key Steps:
+
+1.  **Token Extraction:** The middleware extracts the JWT from the `Authorization` header of the incoming request.
+2.  **Verification:** It uses the Supabase client library to verify the token's authenticity and check that it has not expired. If the token is invalid, the middleware immediately ends the request-response cycle by sending a `401 Unauthorized` error.
+3.  **User Hydration:** If the token is valid, the middleware fetches the corresponding user's profile from the database.
+4.  **Request Augmentation:** The user information is attached to the Express `request` object (e.g., `req.user`).
+5.  **Passing Control:** The middleware calls the `next()` function, passing control to the next function in the stack, which is typically the main route handler (the controller). The controller can now trust that the request is authenticated and has access to the user's information.
+
+## Other Common Middleware
+
+Besides authentication, the backend utilizes other middleware to streamline operations and improve maintainability.
+
+-   **Request Logging:** A simple middleware can be used to log details about every incoming request (e.g., method, URL, timestamp). This is invaluable for debugging and monitoring server traffic. It's typically one of the first middleware functions to run in the stack.
+
+-   **Centralized Error Handling:** Express allows for the creation of a special "error-handling" middleware that has four arguments (`err`, `req`, `res`, `next`). By placing this at the very end of the middleware stack, we can create a single, centralized place to catch any errors that occur during the request-response cycle, format them consistently, and send a clean error message to the client. This avoids cluttering controller logic with repetitive `try...catch` blocks.
+
+## Example Implementation
+
+Below is a simplified example of what the authentication middleware (`src/middleware/auth.js`) might look like.
+
+```javascript
+import { supabase } from '../services/supabaseClient';
+
+export const protect = async (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
+
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      return res.status(401).json({ message: 'Not authorized, token failed' });
+    }
+    
+    // Attach user to the request object
+    req.user = user;
+    next();
+
+  } catch (error) {
+    res.status(401).json({ message: 'Not authorized, token failed' });
+  }
+}; 

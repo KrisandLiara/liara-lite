@@ -1,0 +1,81 @@
+# Frontend
+
+This document describes the frontend architecture.
+
+# Frontend Architecture
+
+The frontend is a modern <Keyword>React</Keyword> application built with <Keyword>Vite</Keyword>, ensuring a fast development experience and optimized builds. It follows a standard component-based architecture designed for maintainability and scalability.
+
+<Diagram>{`
+graph TD;
+    subgraph "Application Source (src)"
+        A(main.tsx) --> B(App.tsx);
+        B --> C{"Pages"};
+        B --> D{"Components"};
+        B --> E{"Contexts"};
+        B --> F{"Hooks"};
+        B --> G{"Services"};
+        B --> H{"Config"};
+        C -.-> G;
+        D -.-> E;
+        F -.-> G;
+    end
+
+    style C fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff
+    style D fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff
+    style E fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style F fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style G fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+    style H fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+`}</Diagram>
+
+## Directory Structure
+
+- **`/pages`**: Contains the top-level components for each application route (e.g., `/app/chat`, `/app/system-overview`). Each page is responsible for fetching its own data and composing smaller, reusable components.
+
+- **`/components`**: A collection of reusable UI components used across the application. This includes both general-purpose elements (like buttons and inputs, often from `shadcn/ui`) and feature-specific components (like `ChatHistory` or `MemoryRecall`).
+
+- **`/contexts`**: Holds React Context providers for managing global state. This includes `AuthContext` for user session information and `MemoryContext` for state related to the memory system.
+
+- **`/hooks`**: Contains custom React hooks that encapsulate reusable logic. A key example is `useMemoryState`, which manages the state and API calls for recent conversations.
+
+- **`/services`**: Includes modules responsible for making API calls to the backend. These services, like `api.ts`, use `axios` to communicate with the server.
+
+- **`/config`**: Stores application-wide configuration, such as the navigation structure for the system overview (`system-overview-nav.ts`).
+
+- **`/lib`**: Utility functions, like `cn` from `tailwind-merge` for constructing conditional class names.
+
+## Routing
+
+The application uses **React Router** with a **layout route** strategy for all protected routes. The main `AppLayout` component acts as the parent for the entire authenticated application, rendering the shared UI (like the header and sidebar) and an `<Outlet />` for the child pages.
+
+This ensures a clean separation of concerns and a stable routing structure.
+
+<Diagram>{`
+graph TD;
+    App[App.tsx] --> R{< Routes >};
+    R --> GuestRoute[/"guest"];
+    R --> ProtectedLayout["/app (AppLayout)"];
+    ProtectedLayout --> O[< Outlet / >];
+
+    subgraph "Child Routes"
+        direction LR
+        O --> ChatPage["chat"];
+        O --> MemoryPage["memory/*"];
+        O --> UserPage["user"];
+    end
+
+    style ProtectedLayout fill:#1A5276,stroke:#3498DB,stroke-width:2px,color:#fff
+`}</Diagram>
+
+## Key Libraries & Technologies
+
+- **React**: The core library for building the user interface.
+- **Vite**: The build tool and development server.
+- **TypeScript**: For static typing, improving code quality and maintainability.
+- **Tailwind CSS**: For utility-first styling.
+- **shadcn/ui**: A collection of beautifully designed, accessible, and reusable components.
+- **React Router**: For client-side routing and navigation.
+- **TanStack Query**: For managing server state, including caching, refetching, and optimistic updates.
+- **Axios**: For making HTTP requests to the backend API.
+- **Lucide React**: For a lightweight and consistent icon set. 

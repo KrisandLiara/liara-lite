@@ -1,0 +1,61 @@
+# Chat System
+
+This document outlines the high-level architecture of the chat system.
+
+The Chat System is responsible for the entire real-time, interactive conversation experience. It is a client-heavy module, with the frontend managing the UI state and the direct, streaming connection to the AI service.
+
+## Core Components
+
+<Diagram>{`
+graph TD;
+    subgraph "Frontend (React)"
+        A[ChatInterface.tsx] --> B[MessageList.tsx];
+        A --> C[ChatInputBar.tsx];
+        A --> D[useChatMessages.tsx];
+    end
+
+    subgraph "Backend (Supabase)"
+        E[chat-with-liara Edge Function]
+        F[chat_history Table]
+    end
+
+    subgraph "External Services"
+        G[OpenAI API]
+    end
+
+    D --> E;
+    D --> F;
+    E --> G;
+    E --> F;
+
+    style A fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff
+    style B fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style C fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style D fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style E fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+    style F fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+    style G fill:#9B59B6,stroke:#fff,stroke-width:1.5px,color:#fff
+`}</Diagram>
+
+- **<Keyword>ChatInterface.tsx</Keyword>**: The main, top-level component for the chat UI. It orchestrates all the other components and manages the overall state of the conversation.
+
+- **<Keyword>MessageList.tsx</Keyword> & <Keyword>ChatInputBar.tsx</Keyword>**: These are the primary UI components. `MessageList` is responsible for rendering the history of messages, and `ChatInputBar` provides the text input and send button for the user.
+
+- **<Keyword>useChatMessages.tsx</Keyword>**: A powerful custom hook that encapsulates the core logic of the chat. It handles:
+    - Storing the message history in its state.
+    - Optimistically updating the UI.
+    - Calling the `chat-with-liara` edge function.
+    - Saving both user and AI messages to the `chat_history` table.
+
+- **<Keyword to="/app/system-overview/edge-functions/chat-with-liara">chat-with-liara</Keyword> Edge Function**: This is the server-side brain of the chat. It receives the user's message from the frontend, constructs a prompt (potentially augmented by the <Keyword to="/app/system-overview/modules/personality-engine">Personality Engine</Keyword>), calls the OpenAI API, and streams the response back to the client.
+
+- **<Keyword to="/app/system-overview/tables/chat-history">chat_history Table</Keyword>**: A simple but crucial table that stores the raw log of every conversation turn.
+
+### Responsibilities:
+- **State Management**: Keeps track of the a current conversation history, including user messages and AI responses.
+- **API Communication**: Sends the message history to the backend `/api/chat-sessions/:id/messages` endpoint.
+- **Streaming Responses**: Implements logic to handle the real-time streaming of response tokens from the backend, providing the "typing" effect for the AI.
+- **UI Updates**: Renders the conversation in the chat window, distinguishing between user and assistant messages.
+
+### Related Flow:
+- [Chat Session Flow](/app/system-overview/data-flow/chat-session-flow) 

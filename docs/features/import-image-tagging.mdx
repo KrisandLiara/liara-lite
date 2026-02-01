@@ -1,0 +1,143 @@
+# Import Image Tagging System
+
+The import pipeline features a comprehensive image detection and tagging system that helps users identify and navigate through conversations containing images. This system handles various types of images consistently, from user-uploaded photos to AI-generated artwork.
+
+## Image Detection
+
+The system uses a unified detection approach that identifies images through multiple methods:
+
+### 1. Metadata Detection
+- Checks `isImage` flag
+- Examines `metadata.type` and `metadata.message_type`
+- Verifies `metadata.is_image` property
+
+### 2. Content Analysis
+The system recognizes several image formats:
+
+#### AI-Generated Images
+```typescript
+// Plain text format
+Prompt: A detailed description...
+Model: DALL-E
+
+// JSON format
+{
+  "prompt": "Description...",
+  "size": "1024x1024",
+  "model": "DALL-E"
+}
+```
+
+#### Image Markers
+- `[Image]` tags
+- `[Image Generated:]` markers
+- `AI Generated Image` text
+- `[Unknown Content]` with image metadata
+
+## Visual Indicators
+
+### 1. Message ID Highlighting
+- Uses indigo theme (`bg-indigo-900/40 border-indigo-600/50 text-indigo-200`)
+- Consistent highlighting across all image types
+- Distinct from other content types (voice: amber, code: cyan)
+
+### 2. Image Tags
+- Shows in conversation header
+- Displays accurate count of images
+- Clickable for navigation
+- Uses same indigo theme for consistency
+
+### 3. Image Preview
+- Dedicated preview component for images
+- Shows prompt and metadata for AI-generated images
+- Consistent styling with the application theme
+- Clear distinction between AI-generated and uploaded images
+
+## Tag Navigation
+
+The image tagging system integrates with the tag navigation feature:
+
+1. Click the image tag to highlight the first image in a conversation
+2. Subsequent clicks cycle through all images
+3. Visual feedback shows current position
+4. Counter shows total number of images
+
+## Implementation Details
+
+### Content Detection Logic
+```typescript
+export const isImageContent = (msg: any): boolean => {
+  // Check metadata flags first
+  if (msg.isImage || 
+      (msg.metadata && (
+        msg.metadata.is_image ||
+        msg.metadata.type === 'image' ||
+        msg.metadata.message_type === 'image'
+      ))) {
+    return true;
+  }
+
+  // Check content for image indicators
+  const content = msg.content;
+  if (typeof content === 'string') {
+    // Check for JSON prompt format
+    if (content.includes('"prompt":')) {
+      try {
+        const jsonContent = JSON.parse(content.trim());
+        if (jsonContent.prompt) {
+          return true;
+        }
+      } catch (e) {
+        // JSON parsing failed, continue with other checks
+      }
+    }
+
+    // Check for plain text AI image format
+    if (content.includes('Prompt:') && content.includes('Model:')) {
+      return true;
+    }
+
+    // Check for image markers
+    return content.includes('[Image]') || 
+           content.includes('[Image Generated:') ||
+           content.includes('AI Generated Image');
+  }
+
+  return false;
+};
+```
+
+### Key Components
+
+1. **PreprocessedPreview.tsx**
+   - Handles message ID highlighting
+   - Manages tag display and counting
+   - Coordinates tag navigation
+
+2. **ImagePreview.tsx**
+   - Renders image content
+   - Formats metadata display
+   - Applies consistent styling
+
+3. **useContentDetection.ts**
+   - Provides shared detection logic
+   - Ensures consistent behavior
+   - Includes debug logging
+
+## Best Practices
+
+1. **Consistency**: Always use the shared `isImageContent` function for detection
+2. **Styling**: Maintain the indigo theme for image-related UI elements
+3. **Metadata**: Preserve and display all available image metadata
+4. **Performance**: Use efficient detection methods, prioritizing metadata over content analysis
+5. **Debugging**: Utilize the built-in debug logging for troubleshooting
+
+## Future Enhancements
+
+Planned improvements for the image tagging system:
+
+1. Enhanced metadata extraction for more image types
+2. Better handling of embedded base64 images
+3. Support for additional AI image generation models
+4. Advanced image categorization (photos, diagrams, screenshots)
+5. Bulk operations for image-containing conversations

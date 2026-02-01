@@ -1,0 +1,35 @@
+# Core Module: Chat System
+
+The chat module is the heart of Liara's user interface. It is responsible for fetching history, sending messages to the <Keyword to="/app/system-overview/backend/server-overview">backend</Keyword>, handling streamed responses, and coordinating with the <Keyword to="/app/system-overview/modules/memory-system">Memory System</Keyword>.
+
+<Diagram>{`
+graph TD;
+    subgraph "ChatPage.tsx"
+        A[ChatInterface] --> B(ChatMessagesView);
+        A --> C(ChatInputBar);
+    end
+
+    subgraph "State Management"
+        D(useMemoryState.tsx);
+    end
+
+    C -- "onSend" --> D;
+    B -- "messages" --> D;
+
+    style A fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff
+    style B fill:#1F618D,stroke:#3498DB,stroke-width:2px,color:#fff
+    style C fill:#1F618D,stroke:#3498DB,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#fff,stroke-width:1.5px,color:#fff
+`}</Diagram>
+
+## Key Components & State
+
+-   **`ChatInterface.tsx`**: The core component that orchestrates the chat experience, managing the layout and the flow of data.
+-   **`ChatMessagesView.tsx`**: Renders the list of messages.
+-   **`ChatInputBar.tsx`**: Provides the text input field and send button.
+-   **`useMemoryState.tsx`**: This custom hook is the brain of the chat system. It centrally manages all state, including fetching history, sending messages to the <Keyword to="/app/system-overview/backend/server-overview">backend</Keyword>, handling streamed responses, and coordinating with the <Keyword to="/app/system-overview/modules/memory-system">Memory System</Keyword>.
+
+## Session Management
+
+The chat system supports robust session management. As detailed in the <Keyword to="/app/system-overview/data-flow/01-main">Data Flow</Keyword> documentation, each conversation is tied to a session, allowing for continuous conversation history and context. The actual session data is stored in the `chat_sessions` table in the <Keyword to="/app/system-overview/database/01-schema-and-tables">database</Keyword>.
+This ensures that if a user refreshes the page or comes back later, they can resume their conversation exactly where they left off. 

@@ -1,0 +1,56 @@
+# Memory Save Flow
+
+This document describes the data flow for saving memories.
+
+This flow details how each individual message from both the user and the AI is persisted to the database during a conversation. This process is initiated from the frontend `useChatMessages` hook and handled by the `chat-with-liara` Supabase Edge Function.
+
+<Diagram>{`
+sequenceDiagram
+    actor User
+    participant Frontend as React UI
+    participant Database as Supabase DB
+    participant AI as OpenAI
+    
+    User->>Frontend: Sends a message
+    activate Frontend
+
+    note right of Frontend: 1. Optimistic UI Update<br/>Displays user message immediately.
+    
+    Frontend->>Database: 2. Save User Message<br/>INSERT into "chat_history" table.
+    activate Database
+    Database-->>Frontend: Confirm save.
+    deactivate Database
+
+    Frontend->>AI: 3. Invoke Edge Function<br/>Calls 'chat-with-liara' with the message content.
+    activate AI
+
+    note over AI: Constructs prompt, calls OpenAI API.
+
+    AI-->>Frontend: Returns AI-generated response text.
+    deactivate AI
+
+    note right of Frontend: 4. Display AI Response<br/>Adds the AI's message to the UI.
+
+    Frontend->>Database: 5. Save AI Response<br/>UPDATE the initial "chat_history" row with the AI response.
+    activate Database
+    Database-->>Frontend: Confirm update.
+    deactivate Database
+
+    deactivate Frontend
+`}</Diagram>
+
+## Step-by-Step Breakdown
+
+This flow ensures every turn of the conversation is recorded.
+
+1.  **Optimistic UI Update**: The <Keyword to="/app/system-overview/architecture/frontend">Frontend</Keyword> immediately renders the user's message in the chat window to make the application feel responsive.
+
+2.  **Save User Message**: The frontend hook `useChatMessages` directly performs an `INSERT` operation on the `chat_history` table using the Supabase client library. This initial insert includes the user's message, but has an empty field for the AI's response.
+
+3.  **Invoke Edge Function**: The frontend then calls the `chat-with-liara` <Keyword>Supabase Edge Function</Keyword>, passing along the user's message. This function handles the interaction with the OpenAI API to get a response.
+
+4.  **Display AI Response**: When the Edge Function returns the AI's response, the frontend immediately displays this new message in the chat window.
+
+5.  **Save AI Response**: Finally, the frontend performs an `UPDATE` on the original `chat_history` row it created in step 2. It fills in the `ai_response` field with the message content received from the AI, completing the conversational record.
+
+This entire process is managed client-side by the `useChatMessages` hook, providing a tight integration between the UI and the database for simple, direct persistence of chat logs. 

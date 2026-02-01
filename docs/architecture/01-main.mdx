@@ -1,0 +1,35 @@
+# Application Architecture
+
+This document provides a high-level overview of the entire Liara application stack, from the frontend to the database.
+
+<Diagram>{`
+graph TD;
+    subgraph "User's Browser"
+        A[React Frontend]
+    end
+
+    subgraph "Liara Backend"
+        B[Node.js / Express Server]
+    end
+    
+    subgraph "Supabase"
+        C[PostgreSQL Database]
+        D[Authentication]
+    end
+
+    A -- "API Requests" --> B;
+    B -- "DB Operations" --> C;
+    B -- "User Auth" --> D;
+`}</Diagram>
+
+## Core Components
+
+- **Frontend**: A Single-Page Application (SPA) built with <Keyword to="/app/system-overview/modules/chat-module">React</Keyword> and TypeScript, using Vite for a fast development experience. It is responsible for all user interface rendering and client-side state management.
+
+- **Backend**: A dedicated <Keyword to="/app/system-overview/backend/server-overview">Node.js server</Keyword> using the Express framework, located in the `liara-backend/` directory. This server acts as the main application brain. It handles all business logic, processes API requests from the frontend, and communicates directly with the Supabase database. All application logic, which was previously in Supabase Edge Functions, now resides here.
+
+- **Supabase**: We leverage Supabase for its robust, managed backend services:
+  - **<Keyword to="/app/system-overview/database/01-schema-and-tables">PostgreSQL Database</Keyword>**: Our primary data store for everything, including memories, users, and application state.
+  - **Authentication**: Manages all user sign-ups, logins, and session management.
+
+This architecture follows a standard SPA pattern, where the frontend is decoupled from the backend logic, providing a clean separation of concerns and a modern, maintainable codebase. 

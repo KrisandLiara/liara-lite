@@ -1,0 +1,29 @@
+# Importing Source JSON
+
+You can now import a raw ChatGPT `conversations.json` file directly from the browser without first creating a preprocessed file on the server.
+
+## How it works
+
+- Use the unified file selector and choose "Import JSON file" (Source)
+- Pick your local `conversations.json`
+- Click Preview
+- The app runs the existing browser‑side processing (`handleProcess`) and shows the Preprocessed preview
+- When you click Apply & Save or run Enrich, the preprocessed results are saved to the backend as usual
+
+## Where the option appears
+
+- Index page (Step 1)
+- Preprocessed preview header (Step 2–3)
+
+## Why client‑side?
+
+- Faster feedback loop (no server round‑trip just to preview)
+- Works even before saving a preprocessed artifact
+- Keeps backend authoritative only when we persist (save or enrich)
+
+## Related
+
+- [Import Pipeline UI](/app/system-overview/features/import-pipeline-ui)
+- [Code Detection & Tagging](/app/system-overview/features/import-code-tagging)
+- [Import Pipeline Data Flow](/app/system-overview/data-flow/import-pipeline)
+

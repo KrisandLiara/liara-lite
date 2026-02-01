@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80" # Map host port 80 to container port 80 (Nginx)
+    container_name: liara-frontend
+    depends_on:
+      - backend
+    # If your frontend needs to know the backend URL at runtime via an env var:
+    # environment:
+    #   - VITE_API_BASE_URL=http://localhost:3000 # Or http://backend:3000 if using service name
+
+  backend:
+    build:
+      context: ./liara-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000" # Map host port 3000 to container port 3000 (Node.js app)
+    container_name: liara-backend
+    env_file:
+      - .env # Load environment variables from .env file in the project root
+    # volumes:  # Comment out the volumes key itself
+      # Optional: Mount src for development to see changes without rebuilding image
+      # Be cautious with this in production or ensure node_modules consistency
+      # - ./liara-backend/src:/usr/src/app/src 
+
+# Optional: Define networks if needed, though Docker Compose creates a default one
+# networks:
+#   app-network:
+#     driver: bridge 

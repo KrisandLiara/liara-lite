@@ -1,0 +1,103 @@
+# Local Development Environment
+
+This document describes the local development environment setup.
+
+Setting up a local development environment allows you to run the entire Liara application stack on your own machine. This is essential for developing new features, fixing bugs, and testing changes.
+
+The application consists of three main parts that must be run concurrently:
+1.  **The Supabase Stack**: A collection of Docker containers managed by the Supabase CLI, providing the PostgreSQL database and authentication services.
+2.  **The Node.js Backend**: An Express server that handles application logic, API routes, and communication with the OpenAI API.
+3.  **The React Frontend**: A Vite-powered development server that provides the user interface.
+
+## Step 1: Start the Supabase Stack
+
+The Supabase local development environment provides the core database and auth services.
+
+1.  **Navigate to the project root**:
+    ```bash
+    cd /path/to/your/project/liara-voice-chat
+    ```
+2.  **Start the services**:
+    ```bash
+    supabase start
+    ```
+This command spins up all necessary Docker containers. When it's running, it will output the local Supabase URL and the `anon` key. These must be placed in the `.env` files for the frontend and backend.
+
+## Step 2: Start the Backend Server
+
+The backend is a standard Node.js Express application.
+
+1.  **Navigate to the backend directory**:
+    ```bash
+    cd liara-backend
+    ```
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Start the development server**:
+    ```bash
+    npm run dev
+    ```
+The API server will now be running, typically on port `3001`.
+
+## Step 3: Start the Frontend
+
+The frontend is a standard Vite React application.
+
+1.  **Navigate to the project root**:
+    ```bash
+    cd /path/to/your/project/liara-voice-chat
+    ```
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+3.  **Start the development server**:
+    ```bash
+    npm run dev
+    ```
+The frontend will now be running, typically at `http://localhost:5173`. It will connect to both the local Supabase instance and the local backend API using the environment variables defined in its `.env` file.
+
+## Required Files
+
+-   **`.env.local`**: This file must be present in the root directory and contain the local Supabase URL and `anon` key provided by the `supabase start` command. See the <Keyword to="/app/system-overview/environments/environment-variables">Environment Variables</Keyword> page for more details.
+
+## Sharing Your Local Environment with ngrok
+
+For demos, collaborative debugging, or testing on external devices, you can expose your local development server to the internet using `ngrok`. This requires a few specific configuration steps to ensure that authentication with Supabase continues to work correctly.
+
+### 1. Install and Configure ngrok
+
+First, ensure you have `ngrok` installed and have an account. To get a consistent URL, it's best to configure a static domain in your ngrok dashboard.
+
+Once configured, you can start `ngrok` to forward to your local Vite server's port (which is `8080` for this project). Use the `--domain` flag to specify your static domain.
+
+```bash
+# Make sure your Vite dev server is running first!
+npm run dev
+
+# In a new terminal, run ngrok
+# Replace <your-static-domain>.ngrok-free.app with your actual static domain
+ngrok http --domain=<your-static-domain>.ngrok-free.app 8080
+```
+
+### 2. Configure Supabase
+
+Supabase will reject authentication attempts from unknown URLs. You must add your `ngrok` URL to your Supabase project's allowlist.
+
+1.  Navigate to your Supabase Project Dashboard.
+2.  Go to **Authentication** > **URL Configuration**.
+3.  Set the **Site URL** to your full `ngrok` URL: `https://<your-static-domain>.ngrok-free.app`
+4.  In the **Redirect URLs** section, add your full `ngrok` URL: `https://<your-static-domain>.ngrok-free.app`
+
+<img
+  src="/screenshots/supabase_url_config_ngrok.png"
+  alt="Supabase URL Configuration for ngrok"
+/>
+
+> **Important**: Ensure the URL is entered correctly in both places, including the `https://` prefix, and that there are no typos. Any mismatch will cause login attempts to fail with a `400 Bad Request` error.
+
+### 3. Accessing the Application
+
+You can now access your local development environment from anywhere using your `ngrok` URL. Remember that if you stop and restart `ngrok` with a non-static domain, you will get a new URL and will need to update your Supabase configuration again. Using a static domain avoids this repetition. 

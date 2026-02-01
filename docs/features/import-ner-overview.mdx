@@ -1,0 +1,22 @@
+# Tags & Named Entities (NER)
+
+## Tags
+- AI-generated topical labels aggregated from messages
+- Header shows top 5 by per‑message presence; remaining tags visible via "+N more" popover
+- Clicking a tag opens the conversation and cycles through matches
+- Inline literal matches are underlined in a per‑conversation color
+- If only a semantic match is found, a transient "semantic" hint appears after scroll
+
+## NER
+- Categories: **PERSON**, **ORG**, **LOC** (UI alias for GPE), **DATE**, **PRODUCT**, **EVENT**
+- Inline highlights render bold with subtle glow, category‑colored; tooltip shows category name
+- Clicking an entity scrolls to matches; if literal highlight is missing but present in data, a brief "close match" hint appears
+
+## Scroll Parity
+- Visual highlights (tags and NER) match the scroll targets
+- Fallback hints appear only when literal highlighting is not possible, to avoid confusion
+
+## Related
+- [Import Pipeline UI](/app/system-overview/features/import-pipeline-ui)
+- [Code Detection & Tagging](/app/system-overview/features/import-code-tagging)
+

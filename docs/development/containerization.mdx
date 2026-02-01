@@ -1,0 +1,47 @@
+# Containerization Strategy
+
+This document explains the use of containerization in the Liara local development environment.
+
+## Overview
+
+We use Docker to ensure a consistent and isolated development environment. However, instead of managing a complex `docker-compose.yml` file directly, we leverage the [Supabase CLI](https://supabase.com/docs/guides/cli), which orchestrates a set of pre-configured Docker containers for all the necessary backend services.
+
+The frontend and backend Node.js server run as standard processes on the local machine, not in containers.
+
+## Local Service Architecture
+
+The diagram below illustrates how the different services are run and how they connect to each other.
+
+<Diagram>
+{`
+graph TD
+    subgraph "Local Processes (Your Machine)"
+        direction LR
+        Frontend["Frontend (Vite)<br/>localhost:3000"]
+        Backend["Backend (Node.js)<br/>localhost:8000"]
+    end
+
+    subgraph "Managed by Supabase CLI (Docker)"
+        direction LR
+        Postgres["PostgreSQL Database<br/>(includes pg_vector)"]
+        GoTrue["GoTrue (Authentication)"]
+        Storage["Storage (S3)"]
+        Studio["Supabase Studio<br/>localhost:54323"]
+    end
+
+    Frontend -- "API Requests" --> Backend
+    Backend -- "Database<br/>Transactions" --> Postgres
+    Backend -- "Auth Checks" --> GoTrue
+    Backend -- "File Operations" --> Storage
+
+    style Frontend fill:#4a8a07,stroke:#fff,stroke-width:2px,color:#fff
+    style Backend fill:#075985,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+### Key Points:
+-   **Frontend & Backend**: Run directly on your host machine for faster development and easier debugging.
+-   **Supabase Stack**: The Supabase CLI command `supabase start` spins up all necessary Docker containers, including the Postgres database (with the `pg_vector` extension enabled), the authentication service, and a local S3-compatible storage service.
+-   **Simplicity**: This hybrid approach provides the stability of containerized backend services without the overhead of containerizing the frontend and backend during active development.
+
+-data coming- 

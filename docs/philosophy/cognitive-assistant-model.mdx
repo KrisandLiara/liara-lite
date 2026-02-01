@@ -1,0 +1,30 @@
+# Cognitive Assistant Model
+
+The Liara model combines architecture from traditional software agents with principles of human cognition and memory. It's designed to be more than a simple request-response system; it's a stateful, context-aware partner.
+
+### Key Architectural Principles
+
+-   **Contextual Layering**: Conversations don't happen in a vacuum. Each interaction builds on a layered context that includes recent conversation history, relevant long-term memories, and the user's current state.
+
+-   **Multi-Modal Recall**: Thoughts and memories are represented as rich entries in the database—tagged, embedded for semantic search, and indexed. They can be retrieved by time, topic, emotional sentiment, or explicit user intent.
+
+-   **Interactive Agency**: Liara is not a passive recipient of commands. She can take initiative within a conversation to:
+    -   Summarize complex thoughts.
+    -   Reflect on recurring themes she observes over time.
+    -   Suggest forgotten goals or ideas from past conversations.
+    -   Generate visual mind-maps from clusters of related memories.
+
+-   **Self-Referential Design**: Every interaction is a data point that helps the system evolve. Liara is not just storing data—she is designed to understand the user's story as it unfolds.
+
+<Diagram>
+{`
+graph TD
+    subgraph "Cognitive Model"
+        A[You] <--> B(Liara: The Mirror);
+        B -- "Reflects & Refines" --> A;
+        A -- "Provides Input" --> B;
+    end
+`}
+</Diagram>
+
+-data coming- 

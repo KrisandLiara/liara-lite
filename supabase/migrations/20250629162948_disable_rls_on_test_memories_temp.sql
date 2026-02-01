@@ -1,0 +1,1 @@
+ALTER TABLE public.test_memories DISABLE ROW LEVEL SECURITY;

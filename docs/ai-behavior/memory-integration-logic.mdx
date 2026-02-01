@@ -1,0 +1,56 @@
+# Memory Integration Logic
+
+This document describes how Liara's memory system retrieves and integrates past information into the context of a new conversation turn. This process is essential for creating a sense of continuity and shared history.
+
+## Memory Integration Flow
+
+The core logic follows a "Retrieve, Inject, Generate, Extract" cycle for each user message.
+
+<Diagram>
+{`
+graph TD
+    A["User Message Received"] --> B{1. Recall Check};
+    B --> C["2. Retrieve Relevant Memories<br/>(Semantic & Tag-Based Search)"];
+    C --> D{"3. Assemble Final Prompt"};
+    subgraph "Prompt Assembly"
+        D1["Core Identity"]
+        D2["Retrieved Memories"]
+        D3["Tool Definitions"]
+        D4["Current Conversation"]
+    end
+    C --> D1 & D2 & D3 & D4 --> E([4. Send to LLM]);
+    E --> F["5. Generate Response"];
+    F --> G{6. Post-Processing};
+    G -- "Extract & Save New Memories" --> H["Update Memory DB"];
+    F --> I["7. Send to User"];
+
+    style C fill:#3a1e8a,stroke:#fff,stroke-width:2px,color:#fff
+    style H fill:#1e8a3a,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+### 1. Recall Check
+Before any other action, the system determines if a memory recall is necessary or has been explicitly requested (e.g., "What do you remember about...").
+
+### 2. Memory Retrieval
+If recall is triggered, the system fetches relevant memories from the database using multiple strategies:
+-   **Semantic Search**: The user's latest message is converted into an embedding vector and used to find memories with similar semantic meaning.
+-   **Keyword/Tag Search**: The system looks for explicit matches between words in the user's message and tags stored in the `memories` table.
+-   **Recent Memories**: High-priority is given to memories created in the last few turns of conversation.
+
+### 3. Prompt Injection
+Retrieved memories are formatted into a special section of the system prompt. This provides the LLM with the necessary context before it processes the user's actual message.
+
+**Example Prompt Snippet:**
+```
+<CONTEXT>
+Here are some relevant memories to inform your response:
+- Memory 1: [User was feeling burnt out last week.]
+- Memory 2: [User is learning about React state management.]
+</CONTEXT>
+```
+
+### 4. Generation & Post-Processing
+After the LLM generates a response using the injected memories, a post-processing step runs to extract any new, salient facts from the conversation turn and saves them as new memories for future recall.
+
+-data coming- 

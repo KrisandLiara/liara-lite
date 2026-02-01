@@ -1,0 +1,198 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+This changelog provides a chronological record of all notable changes made to the Liara application. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+**Our Process:** Work in progress is added under `[Unreleased]`. When a version is finalized, the `[Unreleased]` section is renamed to the new version tag (e.g., `[0.10.0]`), and a new, empty `[Unreleased]` section is created.
+
+## [Unreleased]
+
+### Fixed
+- **Diagram Rendering**: Resolved multiple, cascading bugs in the documentation's diagram rendering pipeline. This included fixing an infinite render loop that caused flickering, correcting component logic that led to nested diagrams, and resolving client-side hydration errors.
+- **Vite Configuration**: Repaired the Vite development server by adding the necessary `wasm` and `topLevelAwait` plugins to support all project dependencies. Also corrected the hot-reload configuration to properly ignore the `node_modules` directory, preventing excessive reloads.
+
+### Changed
+- **Database Documentation**: Overhauled the database documentation to be more accurate and user-friendly. Updated the schema view to reflect the correct `chat_messages` table and replaced the plain link list with a more intuitive and visually appealing `CardGrid` component.
+
+## [0.15.0] - 2024-08-09
+### Added
+- **ChatGPT Import Pipeline**: Implemented a new, robust file-based import system on the `/app/memory/import` page. This includes a file dropzone, a live status console for monitoring the import process, and a detailed data preview grid.
+- **Data Preview Grid**: The new import page features a powerful data preview grid where users can review parsed conversations. Features include expanding conversations to see the full chat history and inline checkboxes to select conversations for enrichment and final import.
+- **Client-Side Parsing**: The initial preview of imported ChatGPT data is now generated entirely on the client side, providing a faster and more responsive user experience.
+
+### Fixed
+- **Vite Dev Server Stability**: Resolved a critical Vite dev server bug where the server would crash or get stuck in a reload loop when MDX files were changed. This was fixed by upgrading to `@vitejs/plugin-react-swc` and ensuring the MDX plugin was loaded before the React plugin.
+- **Vite Cache Issues**: Addressed a persistent issue where the Vite dev server would serve stale, outdated versions of the UI by adding the `import/` directory to the `server.watch.ignored` list in `vite.config.ts`. This prevents the server from reloading every time the backend enrichment process creates a file.
+- **Import Data Preview**: Corrected a significant bug in the client-side parser (`src/lib/import/parser.ts`) that was incorrectly assigning the "Assistant" role to all messages, making it impossible to see the user's side of the conversation.
+
+## [0.14.2] - 2024-08-08
+### Fixed
+- **Chat Interface**: Repaired a bug that prevented the chat from scrolling to the most recent message.
+- **Memory Detail**: Corrected an issue where the memory detail view would not open from the main list.
+- **UI State**: Fixed a bug where UI state was not being correctly synchronized between the main view and detail modals.
+
+### Changed
+- **State Management**: Refactored the memory state management to improve stability and decouple component state.
+
+## [0.14.1] - 2024-08-08
+### Fixed
+- **Memory Card Interaction**: Resolved a bug where clicking on a memory card did not open the detail view. This was traced to a complex state interaction and fixed by decoupling the detail view's state from the main `useMemoryState` hook.
+- **Keyword Highlighting**: Fixed an issue where keyword matches were not being highlighted in the memory detail view. The `searchQuery` was not being correctly propagated, and the highlighting component was made more robust.
+- **Memory Filtering Logic**: Repaired the "Tag", "Hard", and "Semantic" filter buttons, which were not correctly filtering the results. The fix involved switching to the hybrid search endpoint and ensuring the correct `match_type` was assigned and filtered.
+
+### Changed
+- **Memory Search Flow**: Refactored the memory search functionality. When a user clicks a tag, the app now performs a comprehensive hybrid search to fetch all related memories (Tag, Keyword, and Semantic) and then uses frontend filters for display, providing a more intuitive and powerful search experience.
+- **Memory Page Layout**: The primary `/app/memory` route now displays a placeholder overview page instead of a list of all memories, clarifying the UI flow.
+
+### Added
+- **Match Type Badges**: Added "Tag," "Keyword," and "Semantic" badges to the small memory cards in the list view, providing immediate visual feedback on why each memory was returned in a search.
+
+## [0.14.0] - 2024-08-07
+### Added
+- **Hybrid Search**: Implemented a powerful new hybrid search endpoint that combines semantic, keyword, and tag searches to provide more comprehensive and relevant memory recall.
+- **Smart Memory Card**: The detailed memory view now provides much richer context, including specific badges for "Keyword Match," "Tag Match," and "Semantic Match" to clarify why a memory was surfaced. It also indicates the author (User/AI).
+- **Search Filter Toggles**: Added UI toggles to the memory search page, allowing users to dynamically filter results by match type (Tag, Keyword, Semantic) for better debugging and control.
+
+### Changed
+- **Memory Architecture**: Refactored the memory system to support two distinct types of memories: granular, line-by-line entries from bulk imports and high-level, summarized entries from live chats. The hybrid search seamlessly integrates both.
+- **Memory Detail View**: Overhauled the `MemoryDetail.tsx` component with a clearer, more organized layout that separates core content from metadata and semantic insights.
+
+### Fixed
+- **Semantic Search**: Resolved a critical, deep-seated bug where semantic search was consistently failing. The fix involved adding proper vector embedding generation to the memory import process and correcting multiple backend and database function parameter mismatches.
+- **API Routing**: Corrected several incorrect API endpoint paths and request structures that were causing 404 and 500 errors.
+
+## [0.13.0] - 2024-08-06
+### Added
+- **Comprehensive Documentation**: Completed a full documentation pass, populating all sections including Development, AI Behavior & Prompting, Product Roadmap, and Liara's Philosophy with detailed content, diagrams, and code examples.
+- **Reusable Icon Component**: Created a dedicated, reusable `<Icon />` component to ensure consistency and fix rendering errors in MDX files.
+
+### Changed
+- **System Prompt Generalization**: Removed all personal information from the core system prompt, making it a more abstract and reusable policy document.
+- **Sidebar Navigation UX**: Refined the sidebar navigation behavior to prevent accidental collapsing of sections. Clicking the main category title now navigates and expands, while only the chevron icon can be used to collapse a section.
+
+### Fixed
+- **MDX Component Errors**: Resolved multiple rendering errors in documentation pages by correcting import paths for custom components.
+- **Mermaid Diagram Syntax**: Fixed a parsing error in a Mermaid diagram by replacing backticks with their HTML entity equivalent.
+
+### Removed
+- **Redundant Documentation Files**: Cleaned up the `/docs` directory by deleting numerous old, obsolete, and duplicative markdown files, reducing clutter and potential for confusion.
+
+## [0.12.0] - 2024-08-05
+### Added
+- **Comprehensive Documentation Structure**: Implemented a new, logical, and hierarchical structure for the entire System Docs knowledge base, including new sections for Architecture, Memory System, AI Behavior, and Liara's Philosophy.
+- **Placeholder Content**: Created placeholder pages for every new documentation section, complete with descriptive titles and placeholder diagrams or tables, to guide future content creation.
+
+### Changed
+- **Navigation Overhaul**: Completely refactored the System Docs navigation configuration to match the new documentation structure, ensuring all links are valid and logically grouped.
+
+## [0.11.0] - 2024-08-05
+### Added
+- **System Docs State Persistence**: The documentation sidebar now remembers which sections were opened across page loads using `sessionStorage`, providing a more consistent and intuitive navigation experience.
+
+### Fixed
+- **Chat Interface**: Repaired the chat input, which was broken after a recent refactoring (`onSend` prop was missing).
+- **System Docs UI**: Corrected a persistent DOM nesting warning (`<p>` inside `<p>`) that was appearing on multiple documentation pages by ensuring React components and MDX content were rendered with valid HTML structures.
+- **System Docs Sidebar**: Fixed a bug in the documentation sidebar where collapsible sections could be expanded but not collapsed. The behavior has been refined to allow manual control while ensuring the active section remains open.
+- **Content Redundancy**: Removed a legacy, outdated `system-overview.md` file to eliminate confusion and ensure all documentation is sourced from the new MDX-based system.
+
+### Changed
+- **System Docs Navigation**: Refactored the sidebar component to be more robust, improving how it tracks the active page and manages the state of collapsible sections.
+
+## [0.10.0] - 2024-08-04
+### Changed
+- <Keyword>Backend Architecture</Keyword>: Major refactor of the backend, moving all application logic from Supabase Edge Functions to a dedicated Node.js/Express server in the `liara-backend` directory. This improves local development, debugging, and overall system clarity.
+- <Keyword to="/app/system-overview/system-overview/introduction">Knowledge Base Overhaul</Keyword>: Conducted a complete audit and update of the entire System Overview (Knowledge Base). All documentation now accurately reflects the current state of the application architecture.
+
+### Fixed
+- <Keyword>Tag Exploration Feature</Keyword>: Fixed a critical bug where the Tag Exploration feature was non-functional due to an incorrect API route and a misconfigured database function (`search_memories`).
+- <Keyword>Local Development Environment</Keyword>: Repaired the local development environment, which was plagued by an outdated Supabase CLI, stale Docker containers, and conflicting database schemas.
+- <Keyword>Knowledge Base Navigation</Keyword>: Corrected the sidebar navigation to remove obsolete sections (Edge Functions) and accurately represent the current documentation structure.
+
+### Added
+- <Keyword to="/app/system-overview/development/database-workflow">Database Development Workflow</Keyword>: Established and documented a new, reliable workflow for managing database migrations and schema changes. This includes a new guide at `docs/development/database-workflow.mdx`.
+- <Keyword to="/app/system-overview/database/full-schema">Full Database Schema Document</Keyword>: Created a new, viewable document (`docs/database/full-schema.mdx`) containing the entire database schema, which now serves as the definitive source of truth.
+- <Keyword>Comprehensive Auth Documentation</Keyword>: Created a new, detailed guide for Middleware & Authentication.
+
+### Removed
+- <Keyword>Supabase Edge Functions</Keyword>: All application logic has been removed from Supabase Edge Functions in favor of the Node.js backend. The `supabase/functions` directory is now empty.
+- <Keyword>Obsolete Documentation</Keyword>: Removed all documentation related to the now-defunct Edge Functions.
+
+## [0.9.0-alpha] - 2024-08-03
+### Fixed
+- <Keyword>Critical Chat Failure</Keyword>: Repaired the entire chat pipeline, which was completely non-functional after a system crash. This involved a deep-dive diagnosis and fixes across the frontend state management, backend API routing, and database connection logic.
+- <Keyword>System Documentation Restoration</Keyword>: Restored a significant amount of lost work on the System Overview page by recovering files from a backup branch. This included the interactive sidebar, custom components, and all documentation content files.
+
+### Added
+- <Keyword>Backend Environment Loading</Keyword>: Implemented a robust solution for the backend server to correctly locate and load the root `.env` file, ensuring stable and correct credential usage.
+- <Keyword>Full System Documentation</Keyword>: Completed a comprehensive, multi-section System Overview to document the entire application stack.
+- <Keyword>Accordion Sidebar</Keyword>: Implemented collapsible sections in the documentation sidebar for better usability.
+
+### Fixed
+- <Keyword>Documentation Loading</Keyword>: Fixed numerous bugs related to documentation file paths, component exports (`<CodeBlock>`, `<Diagram>`), and sidebar navigation configuration, ensuring all pages load correctly.
+
+## [0.8.0-alpha] - 2024-08-01
+### Added
+- <Keyword>Interactive Documentation</Keyword>: Migrated all documentation from Markdown (`.md`) to MDX (`.mdx`) to support interactive components.
+- <Keyword>MDX Component Suite</Keyword>: Created a library of custom React components (e.g., `<Keyword>`, `<Diagram>`) to build rich, interactive documentation.
+- <Keyword>Dynamic MDX Loading</Keyword>: Refactored the System Overview page to dynamically import and render `.mdx` files.
+
+### Fixed
+- <Keyword>MDX Compilation</Keyword>: Resolved a critical bug with the MDX compiler's parsing of Mermaid diagram syntax.
+
+## [0.2.2] - 2024-07-31
+### Fixed
+- <Keyword>System Overview Content Loading</Keyword>: Resolved a critical issue where documentation content would not load.
+- <Keyword>Simplified Changelog</Keyword>: Replaced a complex, git-based changelog backend with a simple markdown file display.
+
+## [0.2.1] - 2024-07-30
+### Fixed
+- <Keyword>Critical Backend & Frontend Failures</Keyword>: Resolved a prolonged series of cascading errors. This included fixing module system mismatches, routing instability, and database schema bugs.
+
+## [0.2.0] - 2024-07-29
+### Added
+- <Keyword>System Overview Revamp</Keyword>: Overhauled the `/app/system-overview` page into a modular, data-driven documentation center.
+- <Keyword>Visual Documentation</Keyword>: Added detailed diagrams across the System Overview.
+
+### Fixed
+- <Keyword>Routing</Keyword>: Fixed numerous critical routing bugs.
+- <Keyword>Backend Stability</Keyword>: Resolved multiple backend crashes related to path resolution and route syntax.
+
+## [0.1.0] - 2024-07-28
+### Added
+- <Keyword>Initial project setup</Keyword>.
+- <Keyword>Core chat functionality</Keyword> with streaming responses.
+- <Keyword>Memory system</Keyword> for saving and recalling conversations.
+- <Keyword>Basic UI</Keyword> with chat interface and memory page.
+
+## [0.15.2] - The "Clarity & Control" Update
+
+- **Date**: June 30, 2025
+- **Contributors**: [Kris](https://github.com/kris), [Vector](https://github.com/vector)
+
+#### ✨ New Features
+
+- **Granular Import Controls**: The data import page now features a redesigned "Step 2" with options to enrich by `10 lines`, `50 lines`, `10 conversations`, `50 conversations`, or `All selected`. This provides fine-grained control over the enrichment process for faster, more cost-effective testing.
+- **Live Backend Logging**: The import page's "Live Status Console" now streams logs directly from the backend during the enrichment process. This provides real-time transparency into which conversation is being processed.
+- **Test Data Management**: Added a "Clear Test Memories" button to the import page, complete with a custom inline confirmation UI, allowing for the quick and safe deletion of all test data.
+
+#### 🚀 Enhancements
+
+- **User-Centric Embedding**: The enrichment logic has been fundamentally updated to prioritize user content. It now correctly generates vector embeddings for both `user` and `assistant` messages, aligning with the project's core principle of user memory recall.
+- **Intelligent Code Block Handling**: Assistant messages containing code are now preprocessed before embedding. Code blocks are replaced with a simple `[codeblock:<language>]` tag, ensuring successful embeddings without losing the original code in the database.
+- **Improved Summarization**: The AI prompt for generating conversation summaries has been significantly improved to produce more direct, impactful, and less repetitive summaries.
+- **Idempotent Database Loading**: The data loader now uses an "upsert" strategy instead of a simple "insert." This prevents "duplicate key" errors and allows the loading step to be re-run safely without needing to clear the database first.
+- **Detailed Enrichment Logs**: The backend now generates a unique, timestamped `enrichment-log-[timestamp].json` file for each run, detailing every action taken on every message.
+- **Unique File Naming**: The backend now saves enriched data and error logs to unique, timestamped files (e.g., `enriched-[timestamp].json`), preventing any data from being overwritten between runs.
+
+#### 🐞 Bug Fixes
+
+- **Fixed `[object Object]` bug**: Corrected a bug in the data loader that was causing message content to be saved incorrectly as `[object Object]`.
+- **Fixed Missing Tags**: Resolved an issue where tags were being generated but not correctly saved to the database.
+- **Resolved Frontend Crashes**: Fixed multiple bugs on the import page that were causing it to crash during the enrichment process.
+- **Fixed Console Auto-Scroll**: The "Live Status Console" now correctly auto-scrolls to the top to show the latest log message.
+
+## [0.15.1] - Documentation & Diagram Repair
+
+- **Date**: June 28, 2025
+- **Contributors**: [Your Name/Handle](https://github.com/your-handle) 

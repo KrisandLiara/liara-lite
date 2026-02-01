@@ -1,0 +1,132 @@
+# Token & Cost Estimation
+
+The Import system includes a comprehensive token and cost estimation feature that provides users with transparent insights into the computational costs and time requirements for enriching their conversation data.
+
+## Overview
+
+The Token & Cost Estimator appears in **Stage 2: Enrich Data** and provides real-time estimates based on:
+- Selected conversations and messages
+- Chosen enrichment scope (lines vs conversations)
+- AI model selection for cost comparison
+
+## Features
+
+### 🧮 Token Estimation
+- **Input Tokens**: Estimated tokens for conversation content
+- **Output Tokens**: Estimated tokens for generated summaries and tags
+- **Total Tokens**: Combined input + output token count
+- Uses character-based approximation (~3.5 characters per token)
+
+### 💰 Cost Calculation
+- **Multi-Model Support**: Compare costs across different AI models
+- **Real-Time Updates**: Estimates update as you change enrichment scope
+- **Detailed Breakdown**: Shows input vs output cost components
+- **Currency Formatting**: Displays costs with appropriate precision
+
+### ⏱️ Time Estimation
+- **Processing Time**: Estimated duration based on message count
+- **Model-Specific**: Different models have different processing speeds
+- **Smart Formatting**: Shows seconds, minutes, or hours as appropriate
+
+## Supported Models
+
+| Model | Input Cost | Output Cost | Speed |
+|-------|------------|-------------|--------|
+| **GPT-4 Turbo** | $0.01/1K tokens | $0.03/1K tokens | 3s/message |
+| **GPT-4o** | $0.005/1K tokens | $0.015/1K tokens | 2s/message |
+| **GPT-4o Mini** | $0.00015/1K tokens | $0.0005/1K tokens | 1s/message |
+| **GPT-3.5 Turbo** | $0.002/1K tokens | $0.002/1K tokens | 1.5s/message |
+
+## Usage
+
+### In the Import Interface
+
+1. **Process your file** in Stage 1
+2. **Navigate to Stage 2** - the estimator appears automatically
+3. **Select enrichment scope** - estimates update in real-time
+4. **Choose model** from dropdown to compare costs
+5. **Review estimates** before starting enrichment
+
+### Understanding the Display
+
+```
+┌─ Cost Estimation ──────────────────┐
+│ Model: [GPT-4 Turbo ▼]             │
+│                                    │
+│ 📊 Conversations: 25               │
+│ 📝 Messages: 150                   │
+│                                    │
+│ Estimated Tokens: 12,450           │
+│ Input: 11,200 | Output (est.): 1,250 │
+│                                    │
+│ 💰 Estimated Cost: $0.15           │
+│ ⏱️ Estimated Time: 7m              │
+│                                    │
+│ Input cost: $0.11                  │
+│ Output cost: $0.04                 │
+└────────────────────────────────────┘
+```
+
+## Technical Implementation
+
+### Token Estimation Algorithm
+
+```typescript
+// Character-based approximation
+function estimateTokensFromText(text: string): number {
+  return Math.ceil(text.length / 3.5);
+}
+
+// Message includes structure overhead
+function estimateTokensForMessage(content: string): number {
+  const baseTokens = 10; // Role, metadata, etc.
+  const contentTokens = estimateTokensFromText(content);
+  return baseTokens + contentTokens;
+}
+```
+
+### Cost Calculation
+
+```typescript
+interface CostEstimate {
+  inputCost: number;
+  outputCost: number;
+  totalCost: number;
+  estimatedTime: number;
+}
+
+function calculateCostForModel(tokens: TokenEstimate, modelKey: string): CostEstimate {
+  const model = MODEL_PRICING[modelKey];
+  const inputCost = tokens.totalInputTokens / model.inputTokensPerDollar;
+  const outputCost = tokens.estimatedOutputTokens / model.outputTokensPerDollar;
+  // ...
+}
+```
+
+## Benefits
+
+### For Users
+- **Transparency**: Know exactly what enrichment will cost
+- **Budget Control**: Choose appropriate scope and model
+- **Time Planning**: Understand processing duration
+- **Model Comparison**: Find the best cost/performance balance
+
+### For System
+- **Resource Planning**: Predict computational load
+- **Cost Management**: Prevent unexpected expenses
+- **User Experience**: Set proper expectations
+- **Scalability**: Plan for growth
+
+## Accuracy Notes
+
+- **Approximation**: Token counts are estimates, not exact
+- **Conservative**: Slightly overestimates to avoid surprises
+- **Model Dependent**: Different models tokenize differently
+- **Content Sensitive**: Code and special characters may vary
+
+## Future Enhancements
+
+- **Real Tokenization**: Integration with tiktoken for exact counts
+- **Custom Models**: Support for additional AI providers
+- **Batch Discounts**: Account for volume pricing
+- **Historical Data**: Learn from actual usage patterns 

@@ -1,0 +1,17 @@
+# Edge Functions
+
+This section contains documentation about the Supabase Edge Functions.
+
+This section details the server-side logic of the Liara application, which is primarily implemented as <Keyword to="https://supabase.com/docs/functions">Supabase Edge Functions</Keyword>. These are Deno-based TypeScript functions that are deployed globally and execute close to the user, ensuring low latency.
+
+They handle tasks that require privileged access, interact with third-party services like OpenAI, or perform sensitive operations that cannot be done on the client side.
+
+---
+
+### Core Functions
+
+- **<Keyword to="/app/system-overview/edge-functions/chat-with-liara">chat-with-liara</Keyword>**: The primary endpoint for handling conversation turns. It takes user input, retrieves relevant context, and streams back the AI's response.
+
+- **<Keyword to="/app/system-overview/edge-functions/query-memories">query-memories</Keyword>**: A specialized endpoint for answering direct questions based on the user's long-term memory using a RAG pipeline.
+
+- **<Keyword to="/app/system-overview/edge-functions/enrich-personality">enrich-personality</Keyword>**: (Documentation pending) A function for processing and enhancing personality profiles. 

@@ -1,0 +1,59 @@
+# Middleware & Authentication
+
+This document describes the middleware and authentication layer of the application.
+
+This document details the authentication and authorization flow for the Liara application, which is centered around Supabase-issued JSON Web Tokens (JWTs).
+
+## Authentication Flow
+
+<Diagram>{`
+sequenceDiagram
+    participant User
+    participant Frontend as React App
+    participant Supabase as Supabase Auth
+    participant Backend as Node.js API
+
+    User->>Frontend: Logs in with email/password
+    Frontend->>Supabase: supabase.auth.signInWithPassword()
+    Supabase-->>Frontend: Returns JWT
+    Frontend-->>User: Stores JWT in session
+
+    Note over Frontend,Backend: For subsequent requests...
+
+    User->>Frontend: Triggers API call (e.g., sends chat message)
+    Frontend->>Backend: GET /api/chat with "Authorization: Bearer <JWT>"
+    Backend->>Backend: authMiddleware intercepts request
+    Backend->>Supabase: Verifies JWT signature (implicitly via helper)
+    alt Token is valid
+        Backend-->>Frontend: Proceeds to route handler (200 OK)
+    else Token is invalid
+        Backend-->>Frontend: Rejects request (401 Unauthorized)
+    end
+`}</Diagram>
+
+## Components
+
+### 1. Supabase JWT
+
+-   **Issuance**: When a user logs in or signs up via the Supabase client library, Supabase's GoTrue authentication server mints a JWT.
+-   **Content**: This token contains standard JWT claims (`exp`, `iat`) as well as the user's `sub` (which is their UUID), `role`, and other metadata.
+-   **Security**: The token is signed with a secret key (`SUPABASE_JWT_SECRET`) that is shared between the Supabase auth server and our backend.
+
+### 2. Frontend Token Handling
+
+-   The React application uses `@supabase/auth-helpers-react`.
+-   This library automatically handles storing the JWT in local storage and refreshing it when it expires.
+-   For every request made to our backend API, the frontend client attaches the JWT to the `Authorization` header as a Bearer token.
+
+### 3. Backend `authMiddleware`
+
+-   **Location**: `liara-backend/src/middleware/authMiddleware.js`
+-   **Purpose**: This Express middleware is applied to all protected API routes.
+-   **Logic**:
+    1.  It extracts the token from the `Authorization: Bearer <token>` header.
+    2.  It uses the `jsonwebtoken` library and the shared `SUPABASE_JWT_SECRET` to verify the token's signature.
+    3.  If the token is valid, it decodes the payload (which contains the user's ID and role) and attaches it to the `req.user` object.
+    4.  The request is then passed to the next handler in the chain.
+    5.  If the token is missing, expired, or invalid, the middleware immediately sends a `401 Unauthorized` response.
+
+This architecture ensures that our backend API is stateless and that every request is securely authenticated and authorized. 

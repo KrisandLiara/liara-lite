@@ -1,0 +1,14 @@
+# RLS & Policies
+> List/table of policies by table, maybe with traffic-light-style access (✅ read, ❌ write).
+
+### Row-Level Security Policies
+
+| Table | Policy Name | Allows | Notes |
+|---|---|---|---|
+| `memories` | `Users can only access their own memories.` | `SELECT`, `INSERT`, `UPDATE`, `DELETE` | Ensures a user's memories are completely private. |
+| `chat_sessions`| `Users can only access their own sessions.` | `SELECT`, `INSERT`, `UPDATE`, `DELETE` | Users can only see and interact with their own conversation history. |
+| `user_profiles`| `Users can view their own profile.` | `SELECT`, `UPDATE` | Users can see and update their own profile, but not others'. |
+
+This table provides a high-level summary of the most important Row-Level Security (RLS) policies enforced by the database. These rules are critical for ensuring data privacy and security. For the exact SQL definitions of these policies, please refer to the individual table creation scripts in the `supabase/migrations` directory.
+
+-data coming- 

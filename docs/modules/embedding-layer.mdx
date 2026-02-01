@@ -1,0 +1,36 @@
+# Embedding Layer
+
+This document describes the embedding layer of the application.
+
+The Embedding Layer is a conceptual module that acts as a translator between human language and the mathematical world of AI. It doesn't have its own dedicated UI or tables, but it is a critical service consumed by other modules, especially the <Keyword to="/app/system-overview/modules/memory-system">Memory System</Keyword>.
+
+## What is an Embedding?
+
+An embedding is a vector (a list of numbers) that represents the semantic meaning of a piece of text. Words and sentences that are similar in meaning will have vectors that are "close" to each other in multi-dimensional space.
+
+<Diagram>{`
+graph LR;
+    A["Text Input:<br/>'What is a cat?'"] --> B{"Embedding Service<br/>(OpenAI 'text-embedding-ada-002')"};
+    B --> C["Vector Output:<br/>[0.012, -0.005, 0.02, ...]"];
+
+    D["Text Input:<br/>'Tell me about felines.'"] --> B;
+    
+    subgraph "Conceptual Space"
+        direction LR
+        P1(cat_vector) -- similar --> P2(feline_vector);
+        P1 -- different --> P3(car_vector)
+    end
+    
+    C -.-> P1;
+
+    style B fill:#9B59B6,stroke:#fff,stroke-width:1.5px,color:#fff
+`}</Diagram>
+
+## Implementation
+
+This "layer" is implemented through calls to the <Keyword>OpenAI API</Keyword>. Specifically, the application uses the `text-embedding-ada-002` model.
+
+You can find the primary implementation in the backend:
+- **`liara-backend/src/routes/memoryRoutes.js`**: When a new memory is manually saved or a semantic search is performed, this file contains the logic to call `openai.embeddings.create({ ... })`.
+
+This service is the foundation of semantic search. Instead of matching keywords, the system searches for vectors with a similar "meaning," allowing Liara to recall information that is contextually relevant even if it doesn't contain the exact words the user is searching for. This is what makes the memory system feel intelligent. 

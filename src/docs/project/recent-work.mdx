@@ -1,0 +1,15 @@
+import { Badge } from '@/components/ui/badge'
+
+## Recent Work Summary
+
+### v0.15.3: "MAX Mode" Import Pipeline Refactor (Current)
+
+Successfully completed a major refactor of the ChatGPT Import Pipeline. This effort transformed the monolithic `ImportPage.tsx` into a modular, scalable, and powerful ETL-like interface.
+
+- <Badge variant="secondary">Refactor</Badge> **Modular Architecture**: Broke down the import page into dedicated, single-responsibility components (`Stage1_Process.tsx`, `Stage2_Enrich.tsx`, `Stage3_Load.tsx`).
+- <Badge variant="secondary">Refactor</Badge> **Centralized State Management**: Implemented a new `ImportContext` to provide a single source of truth for all child components, eliminating complex prop-drilling and improving maintainability.
+- <Badge>Foundation</Badge> **Enhanced Scalability**: This new architecture makes the codebase cleaner, easier to navigate, and provides a solid foundation for planned future features like advanced data previews, granular processing controls, and a more robust debugging experience.
+
+### v0.15.2: Import Pipeline Hardening
+
+This release focused on hardening the import pipeline by addressing several critical bugs and adding key usability features. 

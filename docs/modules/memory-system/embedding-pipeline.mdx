@@ -1,0 +1,50 @@
+# Embedding Pipeline
+
+The Embedding Pipeline is responsible for converting textual memories into numerical representations called **vector embeddings**. This process is what enables "semantic search," allowing the system to find memories based on their meaning and conceptual similarity, not just keyword matches.
+
+This feature is in active development.
+
+## Pipeline Flow
+
+The diagram below shows the steps involved in creating and using embeddings.
+
+<Diagram>
+{`
+graph TD
+    subgraph "1. Ingestion"
+        direction LR
+        A[Memory Text] --> B{"Embedding Model<br/>(e.g., text-embedding-3-small)"};
+        B --> C["Vector<br/>(Array of numbers)"];
+    end
+
+    subgraph "2. Storage"
+        C --> D["Vector Database<br/>(Supabase pg_vector)"];
+    end
+
+    subgraph "3. Retrieval"
+        direction LR
+        E[User Query] --> F{"Embedding Model"};
+        F --> G["Query Vector"];
+    end
+    
+    subgraph "4. Search"
+        D & G --> H{"Similarity Search<br/>(Finds vectors in DB closest to Query Vector)"};
+        H --> I[Ranked Memory Results];
+    end
+    
+    style A fill:#1a659e,stroke:#fff,stroke-width:2px,color:#fff
+    style E fill:#1a659e,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+### Key Steps:
+
+1.  **Ingestion:** When a new memory is created, its text content is fed into a specific, pre-trained embedding model (currently OpenAI's `text-embedding-3-small`). This model has been trained on a massive corpus of text and understands the relationships between words and concepts.
+
+2.  **Vectorization:** The model outputs a vector—a long list of numbers (in this case, 1536 dimensions)—that represents the semantic "location" of the text in a high-dimensional space. Texts with similar meanings will have vectors that are close to each other in this space.
+
+3.  **Storage:** This vector is stored in a specialized `vector` column in our <Keyword to="/app/system-overview/database/01-schema-and-tables">PostgreSQL database</Keyword>, using the `pg_vector` extension. This extension provides the necessary data types and functions for efficient vector storage and similarity search.
+
+4.  **Retrieval:** To find relevant memories, the user's *current query* or conversation topic is converted into a vector using the exact same model. This ensures that the query vector and the stored memory vectors exist in the same "semantic space."
+
+5.  **Similarity Search:** The system then performs a similarity search (typically using a function like cosine similarity) to find the vectors in the database that are most mathematically similar (i.e., closest) to the query vector. The memories associated with these vectors are returned as the most contextually relevant results. 
