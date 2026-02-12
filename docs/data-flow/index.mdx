@@ -1,0 +1,19 @@
+# Data Flow
+
+This section contains documentation about the data flows in the application.
+
+This section provides a detailed look at the primary data flow sequences within the Liara application. Understanding how information moves through the system—from user input to database storage to AI processing—is crucial for debugging, identifying bottlenecks, and extending the system's capabilities.
+
+Each flow is represented by a sequence diagram and a step-by-step breakdown to clarify the interactions between the <Keyword to="/app/system-overview/architecture/frontend">Frontend</Keyword>, <Keyword to="/app/system-overview/architecture/backend">Backend</Keyword>, and external services.
+
+---
+
+### Key Flows
+
+- **<Keyword to="/app/system-overview/data-flow/chat-session-flow">Chat Session Flow</Keyword>**: Describes the end-to-end lifecycle of a single message, from the moment a user sends it to the moment the AI's response is fully displayed and saved.
+
+- **<Keyword to="/app/system-overview/data-flow/memory-save-flow">Memory Save Flow</Keyword>**: Details how each turn of a conversation is processed and persisted to the database, ensuring no data is lost.
+
+- **<Keyword to="/app/system-overview/data-flow/semantic-recall-flow">Semantic Recall Flow</Keyword>**: Explains the powerful process of how the system uses vector embeddings to perform a semantic search and find the most relevant long-term memories during a conversation. 
+
+- **<Keyword to="/app/system-overview/data-flow/import-pipeline">Import Pipeline Flow</Keyword>**: Shows how the import UI processes raw data → enriches via AI → loads to DB with idempotent writes.

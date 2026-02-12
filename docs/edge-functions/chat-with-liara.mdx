@@ -1,0 +1,60 @@
+# Edge Function: `chat-with-liara`
+
+This document describes the `chat-with-liara` edge function.
+
+This is the primary and most complex Edge Function in the application. It serves as the main conversational endpoint, orchestrating context retrieval, personality application, and interaction with the OpenAI API.
+
+## Purpose
+
+The `chat-with-liara` function is invoked every time a user sends a message in the chat interface. Its core responsibility is to take the user's input, gather all necessary context (like chat history and personality settings), send a well-formed request to the language model, and return the AI's complete response.
+
+Notably, this function **does not stream** the response. It waits for the full reply from OpenAI and returns it in a single payload.
+
+## Execution Flow
+
+1.  **Authorization & CORS**: The function first handles CORS preflight requests and validates the user's authorization, which is handled implicitly by Supabase's Edge Function invocation mechanism.
+2.  **API Key Retrieval**: It securely fetches an active API key from the `api_keys` table where `name` is 'Server API Key' or 'Guest/Personal'. It will use the most recently created key.
+3.  **Personality & Context Loading**:
+    - If the user is a guest (`isGuestUser: true`), it looks for a global personality in the `personality` table with the name `GuestPrompt`. If not found, it uses a hardcoded, concise prompt.
+    - If the user is authenticated, it attempts to load a user-specific personality named `Default Chat System Prompt`.
+    - If a `conversationId` is provided for an authenticated user, it fetches the last 10 messages from `chat_history` to include as conversational context.
+4.  **OpenAI API Call**: It constructs a messages array containing the system prompt, the historical messages, and the new user message. It then calls the OpenAI `/v1/chat/completions` endpoint.
+5.  **Response Handling**: The function parses the response from OpenAI and returns the AI-generated message content.
+
+## Request Body
+
+The function expects a JSON object with the following properties:
+
+````json
+{
+  "userMessage": "string",
+  "userId": "uuid | null",
+  "guestSessionId": "string | null",
+  "isGuestUser": "boolean",
+  "conversationId": "uuid | null"
+}
+````
+
+## Response Body
+
+On success, it returns a JSON object containing the AI's reply:
+
+````json
+{
+  "aiResponse": "string",
+  "userId": "uuid | null",
+  "guestSessionId": "string | null",
+  "isGuestUser": "boolean"
+}
+````
+
+On failure, it returns a 500 status code with an error message:
+
+````json
+{
+  "error": "string"
+}
+````
+```
+
+Please let me know when you have made these changes, and I will provide the content for the next file.

@@ -1,0 +1,43 @@
+# Express Authentication
+
+This document describes the authentication middleware used in the Express backend.
+
+In addition to the frontend application, Liara runs a backend server built with <Keyword to="https://expressjs.com/">Express.js</Keyword>. This server handles certain API routes that require a secure, server-side environment. To protect these routes, a custom authentication middleware is used.
+
+## The `authenticate` Middleware
+
+The core of this security layer is the `authenticate` function, found in `liara-backend/src/middleware/auth.js`. This function is applied to any Express route that should not be publicly accessible.
+
+### How It Works
+
+The middleware intercepts every incoming request to a protected route and performs the following steps:
+
+1.  **Extract Token**: It looks for an `Authorization` header in the request and expects to find a JWT in the format `Bearer <token>`. If the header or token is missing, it immediately rejects the request with a `401 Unauthorized` error.
+
+2.  **Verify Token**: The extracted token is sent to the Supabase Auth server using the `supabase.auth.getUser(token)` method. Supabase attempts to validate the token's signature and expiry.
+
+3.  **Attach User**: If Supabase confirms the token is valid, it returns the corresponding user object. The middleware then attaches this user object to the Express `request` object (`req.user`).
+
+4.  **Proceed or Reject**:
+    - If the user is successfully attached, the `next()` function is called, passing the request along to the actual route handler. The route handler can then use `req.user` to access the authenticated user's ID and other details.
+    - If Supabase returns an error, it means the token is invalid or expired. The middleware rejects the request with a `401 Unauthorized` error.
+
+This process ensures that no unauthenticated requests can ever reach the sensitive logic within the protected API routes.
+
+### Example Usage
+
+```javascript
+// In a route file like 'liara-backend/src/routes/memoryRoutes.js'
+import { Router } from 'express';
+import { authenticate } from '../middleware/auth.js';
+import { someProtectedRoute } from '../controllers/memoryController.js';
+
+const router = Router();
+
+// This route is protected by the authenticate middleware.
+// The middleware will run and verify the user before the
+// someProtectedRoute function is ever called.
+router.post('/memories', authenticate, someProtectedRoute);
+
+export default router;
+``` 

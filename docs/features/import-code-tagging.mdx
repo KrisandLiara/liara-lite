@@ -1,0 +1,160 @@
+# Code Detection & Tagging in Import Preview
+## What you see is what is removed
+
+The preview highlights now match removal exactly. We use a shared renderability filter so only code‑like text is highlighted and removed:
+
+- Strong signals: fences, braces/operators, stack traces, URLs, real function calls
+- Ignored: Markdown prose, natural sentences, separators (---), LaTeX math, media markers
+- Mixed content: voice/image take precedence and never tag as code
+
+Non‑aggressive mode is conservative; once a conversation has ≥20 code‑like messages (count‑only detector), aggressive mode enables segment capture and block unification.
+
+<Diagram>
+{`
+flowchart LR
+  A[Raw Message Content] --> B{Detect Code?}
+  B -- No --> C[Render Normally]
+  B -- Yes --> D[Group Related Lines]
+  D --> E[Preserve Context]
+  E --> F[Highlight + Badge]
+  F --> G[Preview Removal]
+`}
+</Diagram>
+
+The code detection and tagging system in the import preview provides a comprehensive way to identify, preview, and manage code content in conversations. This feature is crucial for the preprocessing stage, allowing users to see exactly what code will be removed before committing to changes.
+
+## Core Features
+
+### 1. Unified Detection Logic
+- Uses a single source of truth (`findCodeBlocks` function) for all code-related operations
+- Ensures perfect matching between preview highlighting and actual code removal
+- Handles multiple code formats:
+  - Markdown code blocks (``` blocks)
+  - Inline code (` backticks)
+  - Stack traces and error messages
+  - JavaScript/TypeScript patterns
+  - API configurations
+  - JSON/YAML-like structures
+
+### 2. Smart Block Grouping
+- Intelligently combines related code fragments into cohesive blocks
+- Special handling for:
+  - Error messages with stack traces
+  - Multi-line code blocks with comments
+  - User messages with code introductions
+  - Related code fragments separated by comments/context
+
+### 3. Context-Aware Processing
+- Detects "code-heavy" conversations (≥ 20 code blocks) for more aggressive pattern matching
+- Preserves important context in user messages (e.g., "I have this error:")
+- Different processing rules for user vs AI messages
+- Maintains readability by keeping related context with code blocks
+
+### 4. Visual Indicators
+- Clear badge system showing code block types
+- Consistent color themes:
+  - User messages: Blue theme
+  - AI messages: Cyan theme
+- Context text displayed outside highlighted blocks
+- Message ID highlighting matching code detection
+
+## Implementation Details
+
+### Code Detection Patterns
+
+```typescript
+// Core detection patterns
+const commonPatterns = [
+  // Stack traces
+  { prev: /Error:.*$/, current: /^\s+at\s+/ },
+  { prev: /\s+at\s+.*$/, current: /^\s+(?:at\s+|$)/ },
+  
+  // Code block markers
+  { prev: /\{$/, current: /^\s*\w/ },
+  { prev: /\($/, current: /^\s*[\w'")}]/ },
+  
+  // API/Router patterns
+  { prev: /router\.post\(.*$/, current: /^\s*try\s*{/ },
+  { prev: /try\s*\{\s*$/, current: /^\s*const/ }
+];
+```
+
+### Block Relationship Detection
+
+The system uses sophisticated pattern matching to determine if consecutive lines are part of the same logical block:
+
+```typescript
+const areLinesRelated = (prevLine: string, currentLine: string): boolean => {
+  // Check various continuation patterns
+  return continuationPatterns.some(({ prev, current }) => 
+    prev.test(prevLine) && current.test(currentLine)
+  );
+};
+```
+
+### User Message Handling
+
+Special logic for user messages ensures important context is preserved:
+
+```typescript
+if (isUserMessage) {
+  const contextPattern = /^(?:I have|I get|Getting|Here's|This is|Error:|Got)\s+(?:this|the|an?|some)\s+(?:error|code|output|message|warning)/i;
+  if (contextPattern.test(line)) {
+    // Preserve this line as context
+    return true;
+  }
+}
+```
+
+## Visual Components
+
+### Code Block Display
+- Highlighted container with theme-based styling
+- Corner badge showing code type
+- Context text above/below in muted color
+- Smooth hover effects
+
+### Tag Navigation
+- Code tag in conversation header shows count
+- Click to cycle through code blocks
+- White highlight on last block
+- Automatic scroll into view
+
+## Usage Guidelines
+
+1. **Initial Review**
+   - Check the code tag count in conversation headers
+   - Review highlighted blocks to see what will be removed
+   - Verify context preservation is appropriate
+
+2. **Code-Heavy Conversations**
+   - Look for the "Code-heavy conversation" indicator
+   - Expect more aggressive code detection
+   - Review context preservation carefully
+
+3. **User Messages**
+   - Check that error introductions are preserved
+   - Verify code blocks are properly grouped
+   - Ensure context remains readable
+
+4. **Preprocessing**
+   - Use the preview to verify code removal accuracy
+   - Check that important non-code content is preserved
+   - Review any edge cases or unclear detections
+
+## Future Enhancements
+
+1. **Pattern Refinement**
+   - Add more language-specific patterns
+   - Enhance error message grouping
+   - Improve context preservation rules
+
+2. **UI Improvements**
+   - Add code language detection
+   - Enhance syntax highlighting
+   - Provide code block statistics
+
+3. **User Controls**
+   - Add manual code block marking
+   - Provide pattern customization
+   - Allow block-specific removal options

@@ -1,0 +1,247 @@
+# Recent Work Summary
+
+This document provides a detailed overview of the major development, debugging, and refactoring efforts.
+
+## Preprocessed File Management System (v0.15.7)
+
+**Date**: January 31, 2025
+
+A comprehensive file management system was implemented to handle preprocessed conversation files, eliminating the need to reprocess the same data repeatedly and providing users with an intuitive interface to manage their import workflow.
+
+### 🎯 **Features Implemented:**
+
+**1. Backend API Infrastructure:**
+- `GET /api/import/preprocessed-files` - Lists all preprocessed files with timestamp-based sorting
+- `DELETE /api/import/preprocessed-files/:filename` - Secure file deletion with path traversal protection
+- Enhanced `GET /api/import/file-content` endpoint to support `from=preprocessed` parameter
+- Standardized filename format: `preprocessed_conversations_[timestamp].json` for consistent sorting
+
+**2. PreprocessedFileManager Component:**
+- **Smart timestamp parsing** extracts timestamps from filenames and converts to human-readable format
+- **Intelligent time display** shows "2h ago", "3d ago" instead of raw timestamps  
+- **Date/time formatting** displays files as "1/31/2025 2:15 PM" for easy identification
+- **Integrated delete functionality** with confirmation dialog and visual feedback
+- **Dropdown selection** with "Process new file" option and existing file list
+- **Real-time sorting** displays newest files first automatically
+
+**3. Workflow Integration:**
+- **Conditional UI rendering** - file upload interface only appears when "Process new file" is selected
+- **Automatic data loading** when selecting existing preprocessed files
+- **State synchronization** between file selection and conversation data
+- **Error handling** with toast notifications and loading states
+- **Context integration** through ImportContext for centralized state management
+
+### 🎨 **User Experience Enhancements:**
+
+**Visual Design:**
+- **Compact layout** fits seamlessly into existing Step 1 interface
+- **Icon system** with Clock icons for existing files, FileText for new processing
+- **Color-coded feedback** with red delete buttons and confirmation dialogs
+- **Professional styling** consistent with application theme
+
+**Interaction Flow:**
+- **Single dropdown** replaces multiple file management interfaces
+- **Instant feedback** with loading states and success/error messages
+- **Smart defaults** with "Process new file" as the default option
+- **Delete confirmation** prevents accidental file removal
+
+### 🔧 **Technical Implementation:**
+
+**File Management Logic:**
+```typescript
+// Smart filename parsing with timestamp extraction
+const timestampMatch = filename.match(/(\d{13})/);
+const timestamp = timestampMatch ? parseInt(timestampMatch[1]) : Date.now();
+
+// Human-readable time calculations
+const diffMs = now.getTime() - timestamp;
+const timeAgo = diffMins < 60 ? `${diffMins}m ago` : `${diffHours}h ago`;
+```
+
+**Backend Security:**
+- Path traversal protection with `path.basename()` sanitization
+- Directory validation ensuring files stay within `PREPROCESSED_DIR`
+- Authentication middleware on all endpoints
+- Proper error handling with detailed logging
+
+**Frontend State Management:**
+- Centralized state in ImportContext with `selectedPreprocessedFile`
+- Automatic data loading through `handleLoadPreprocessedFile` function
+- Real-time file list updates after deletion operations
+- Proper cleanup when switching between files
+
+### 📊 **Impact & Benefits:**
+
+**Developer Experience:**
+- **Eliminated redundant processing** - no need to reprocess same files repeatedly
+- **Improved debugging workflow** - easy access to previously processed datasets
+- **Better file organization** - timestamp-based naming and sorting
+- **Reduced processing time** - instant loading of existing preprocessed data
+
+**User Experience:**
+- **Intuitive interface** - clear visual distinction between new and existing files
+- **Time-aware display** - immediate understanding of file recency
+- **Safe deletion** - confirmation dialogs prevent accidental data loss
+- **Seamless workflow** - smooth transition between file selection and processing
+
+**System Architecture:**
+- **Modular design** - reusable components for future file management needs
+- **Scalable backend** - standardized API patterns for file operations
+- **Consistent naming** - predictable filename format for automated tools
+- **Error resilience** - comprehensive error handling throughout the stack
+
+This implementation transforms the import workflow from a linear "always start fresh" process into a flexible file management system that respects user time and provides professional-grade functionality for managing conversation data preprocessing.
+
+## System Stabilization & Routing Refactor (v0.15.1-alpha)
+
+This cycle was an intense, unplanned debugging effort to stabilize a fragile system. It began with a simple bug—chat conversations not loading—and cascaded into a series of critical failures across the entire stack, from the database schema to the build pipeline and frontend routing.
+
+### 1. The Cascade of Failures
+
+-   **Initial Symptom**: The application's core feature was broken. The list of recent conversations would not load, and clicking a conversation did not display its messages.
+-   **Database Drift**: The first major discovery was that the remote Supabase database schema had "drifted" significantly from the local migration files. The `chat_history` table had been replaced with a `chat_messages` table, and numerous functions and indexes were in an inconsistent state. This was the primary cause of the data loading failures.
+-   **Build & Configuration Hell**: After synchronizing the database, we were immediately hit with a series of fatal build errors.
+    -   **PostCSS & Tailwind v4 Conflict**: The Vite server would crash, complaining about an incorrect PostCSS configuration. We were caught in a loop where the error messages were contradictory, pointing us to use both `tailwindcss` and `@tailwindcss/postcss` at different times.
+    -   **Missing Dependency**: The final resolution to the build crisis was discovering that the `@tailwindcss/vite` package, which is essential for Tailwind v4 with Vite, was never installed. This was a critical oversight that blocked all progress.
+-   **Agent Error: Incorrect Deletion**: During the build chaos, in a critical error, I (Vector) misread the project's documentation and incorrectly identified the `liara-backend` as obsolete, deleting it. This was wrong and required a full restoration from version control, which further complicated the debugging process.
+
+### 2. The Final Fixes: A Three-Pronged Solution
+
+With the build system finally stable, the initial data loading and UI bugs resurfaced, which we systematically eliminated.
+
+1.  **Frontend Routing Refactor (The Core Problem)**: The application was using a fragile, nested `<Routes>` structure in `App.tsx`. This was the root cause of why pages would not render on navigation.
+    -   **The Fix**: The routing was refactored into a proper layout route structure. The `<AppLayout />` component was made a parent route, and it now renders its children via an `<Outlet />` component. This is a more robust and standard implementation that resolved all navigation failures.
+    -   **Tooling Failure**: This fix was severely hampered by a catastrophic failure of the AI tooling, which repeatedly refused to apply the correct code, deleted entire components, and made random, nonsensical edits. The final fix had to be applied manually by the user.
+
+2.  **Data Flow & Rendering Bugs**:
+    -   **Data Mapping Error**: In `RecentConversationsList.tsx`, the component was trying to render a conversation's update time using `c.latest_message_time` when the database was providing `c.last_message_at`. This mismatch was corrected.
+    -   **Invalid Date Crash**: After fixing the mapping, the app would still crash with an `Invalid time value` error because some database entries had `null` or invalid date strings. A `timeAgo` helper function was added to `ConversationItem.tsx` to validate the date before formatting it, making the component resilient to bad data.
+
+3.  **Theme/Color Correction**:
+    -   The application was rendering with a broken theme (dark sidebar, light content). This was because the `ThemeProvider` from `next-themes` was missing.
+    -   **The Fix**: The `ThemeProvider` was wrapped around the entire application in `App.tsx`, finally enabling consistent dark mode theming.
+
+## Refactor and Bug Fix Cycle (v0.15.0-alpha)
+
+This cycle focused on resolving a critical bug in the semantic search functionality, which led to a major refactoring of the frontend's state management architecture and a series of subsequent bug fixes across the stack.
+
+### 1. Initial Problem & Diagnosis: Semantic Search Failure
+
+- **Symptom**: The "Semantic Search" feature on the Memory page was completely non-functional. While tag and keyword searches worked, semantic queries returned no results.
+- **Investigation**: A diagnostic tool was built to inspect memory embeddings. This revealed that the embeddings were correctly generated but that the `search_memories` SQL function was using a hardcoded `similarity_threshold` of `0.78`, which was far too high for the `text-embedding-3-small` model.
+- **Root Cause**: The immediate issue was the overly strict threshold. However, the attempt to fix this revealed a deeper, more critical problem: a fragile and bug-prone frontend architecture. A simple migration fix led to a cascade of frontend crashes stemming from a corrupted `use-memory-state.tsx` hook, making the application unusable.
+
+### 2. Solution: Major Frontend Refactor
+
+To address the instability, a decision was made to execute a major refactoring of the frontend's memory management system, porting a more robust architecture from a previous branch.
+
+- **Deprecated Monolith**: The single, monolithic `use-memory-state.tsx` hook was deprecated and deleted. This hook was responsible for all data fetching, state management, and UI logic, making it difficult to debug and maintain.
+- **New Modular Architecture**: The old hook was replaced by a new, modular system built on the React Context API:
+    - **`MemoryContext.tsx`**: A new context provider was created to serve as the single source of truth for all memory-related data and functions.
+    - **`useMemoryCore.ts`**: A foundational hook responsible for core state management, including fetching initial data, managing the list of memories, and handling conversations.
+    - **`useSearchMemories.ts`**: A specialized hook dedicated to handling all search-related logic, including keyword, tag, and semantic searches.
+    - **`useMemoryUIState.ts`**: A hook focused purely on managing the UI state of the Memory page, such as which views are active, loading states, and selected filters.
+- **Component Integration**: All components related to the Memory page (`AllMemoriesView`, `MemoriesByTagView`, `MemoryPageSidebar`, etc.) were refactored to consume the new `useMemory()` context instead of the old hook. This dramatically simplified the components and decoupled them from the underlying state logic.
+
+### 3. Subsequent Bug Fixes
+
+The refactor stabilized the application but introduced a new set of integration bugs that were systematically resolved.
+
+- **Theme/Styling Failure**: The application's theme was broken. This was traced to an incorrect PostCSS configuration in `postcss.config.cjs`. The fix involved changing the plugin from `@tailwindcss/postcss` to the standard `tailwindcss`.
+- **Chat Interface Crash**: The `ChatInterface.tsx` component was crashing with a `TypeError: onSend is not a function`. The root cause was a simple typo where the component was passing `onSendMessage` instead of the expected `onSend` prop to the `ChatInputBar`.
+- **Backend API 500 Error**: After fixing the chat input, all messages resulted in a 500 Internal Server Error. The error was in `liara-backend/src/routes/chatRoutes.js`, which was calling the `chat-with-liara` Supabase function with an incorrect payload (`{ body: { userMessage: ... } }`). This was corrected to use `{ body: { message: ... } }`, matching the function's expectation.
+- **Infinite Loading Spinner**: The Memory Page was stuck on an infinite loading spinner after the refactor. This was fixed by adding a `useEffect` to `MemoryPage.tsx` to call the `fetchInitialData` function when the component mounts.
+- **Duplicate Sidebar**: A layout issue was causing a duplicate sidebar to appear on the `AllMemoriesView`. This was resolved by restructuring the component to remove the redundant sidebar element.
+
+## Previous Work (v0.7-alpha)
+
+This section provides a detailed overview of the major development, debugging, and refactoring efforts completed during the `v0.7-alpha` cycle.
+
+### 1. Feature: System Overview Page
+
+A new "System Overview" page was created, accessible only to administrators. This page serves as a comprehensive internal documentation hub.
+
+- **Initial Creation**:
+    - A new route `/app/system-overview` was added.
+    - A static page component (`SystemOverviewPage.tsx`) was built.
+    - A conditional navigation link was added to the main sidebar, visible only to users with an 'admin' role.
+
+- **Interactive Diagrams**:
+    - The page's static diagrams were converted into interactive diagrams using the `reactflow` library. This allows for panning, zooming, and exploring the system's architecture visually.
+
+- **UI Refactor**:
+    - The entire page was refactored into a tabbed interface with a contextual sidebar for navigating different sections.
+    - Content sections were made collapsible to improve usability and reduce clutter.
+
+### 2. Critical Bug Fix: "Not a valid JSON" Error
+
+A critical bug was reported in the deployed environment where conversations would not load, and the browser console showed a `SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON`.
+
+- **Root Cause Analysis**:
+    - The initial assumption of a faulty Supabase RPC function was incorrect.
+    - The true cause was that **Row Level Security (RLS) was disabled** on the Supabase project.
+    - With RLS disabled, Supabase's default behavior is to block all frontend API requests for security reasons, returning an HTML error page instead of the expected JSON data. The frontend, attempting to parse the HTML as JSON, crashed.
+
+- **Database Migrations**:
+    - RLS was enabled on the Supabase project.
+    - A series of database migrations were created to define security policies for all tables, ensuring that only authenticated (and authorized) users could access their own data.
+
+### 3. Backend Refactor: `liara-backend`
+
+After fixing the database security, the `liara-backend` Express server became the next point of failure. It was making unauthenticated requests to the now-secured Supabase backend.
+
+- **CORS Error**:
+    - The backend was initially failing due to a CORS error. The `cors` middleware was added to the Express app to resolve this.
+
+- **Authentication Middleware**:
+    - The most critical fix was creating a dedicated authentication middleware (`authMiddleware.ts`).
+    - This middleware intercepts all incoming API requests, extracts the JWT from the `Authorization` header, and validates it against the `SUPABASE_JWT_SECRET`.
+    - If the token is valid, the user's data is attached to the request object (`req.user`) for use in downstream route handlers.
+    - If the token is invalid, missing, or expired, the middleware immediately rejects the request with a `401` or `403` error.
+
+- **Environment Variable Fix**:
+    - The backend was crashing with `SUPABASE_KEY: undefined`. The code was expecting `SUPABASE_SERVICE_ROLE_KEY`, but the user's `.env` file contained `SUPABASE_KEY`. The code was updated to use the correct variable name.
+
+- **Secure Routes**:
+    - All Express routes were refactored to be under a single, secure parent router that applies the `authMiddleware`. This ensures that every API endpoint is protected by default.
+
+### 4. Frontend & Proxy Configuration
+
+Even with a secure backend, the frontend was unable to communicate with it.
+
+- **Proxy Issue**: The frontend was making requests to an absolute URL (`http://localhost:3000`), which the Vite dev server was not proxying correctly.
+- **Solution**:
+    - The frontend's API base URL was changed to a relative path (`/api`).
+    - All backend routes in the Express server were prefixed with `/api`.
+    - The `vite.config.ts` file was updated with a proxy rule to forward all requests from `/api` to the backend server running on `http://localhost:3000`.
+
+### 5. UI & Logic Bug Fixes
+
+The successful connection between the frontend and backend revealed several latent UI bugs from previous refactors.
+
+- **`ChatPage.tsx` Crash**: The page was trying to call a deleted function (`loadLastActiveConversation`). The component was simplified to be a basic container, and the faulty logic was removed.
+- **Can't Continue Conversations**: Clicking an old conversation in the sidebar was incorrectly starting a new chat. The `onClick` handler in `RecentConversationsList.tsx` was fixed to correctly load the selected conversation.
+- **Can't Delete Conversations**:
+    - The delete button appeared to do nothing because the UI would get stuck in a "deleting" state if the backend returned an error. The `handleConfirmDelete` function in `ConversationItem.tsx` was wrapped in a `try...catch` block to ensure the UI always resets.
+    - A subsequent issue was traced to an incorrect guard clause in `RecentConversationsList.tsx`, where `!userId` was causing the `handleDelete` function to exit prematurely. This check was removed, as the `deleteConversation` function in the memory context already performs the necessary user validation.
+
+### 6. Feature: AI-Powered Conversation Summarization
+
+A new feature was added to allow users to generate a topic, summary, and tags for any conversation automatically.
+
+-   **"Generate Details" Button**:
+    -   A button was added to the `ChatHeader`. When clicked, it calls a new backend endpoint: `POST /api/chat-sessions/:id/generate-details`.
+    -   The button's state is intelligently managed, changing to a disabled "Details Generated" state upon success to provide clear user feedback and prevent duplicate requests.
+
+-   **Backend Logic (`/generate-details`)**:
+    -   The endpoint fetches the full transcript of the specified conversation from the `chat_history` table.
+    -   It sends the transcript to the OpenAI API (`gpt-3.5-turbo`) with a prompt engineered to return a JSON object containing a `topic`, a `summary`, and an array of `tags`.
+    -   The backend then creates a vector embedding of the generated topic and summary for semantic search capabilities.
+    -   A critical **"upsert"** operation is performed into the `memories` table. The logic checks if a memory with `source: 'conversation_summary'` already exists for the given `chat_session_id`. If found, it updates the existing record; otherwise, it inserts a new one. This prevents data duplication and ensures each conversation has only one canonical summary memory.
+    -   Finally, the conversation's main `title` in the `chat_sessions` table is updated with the new, AI-generated topic for consistency across the UI.
+
+-   **Frontend Integration & Bug Fixes**:
+    -   **`ChatHeader`**: The `ChatHeader` was refactored to display the generated tags next to the conversation title after details have been generated.
+    -   **Query Bug**: A persistent bug was fixed where generated tags would disappear after a page refresh. The root cause was an incorrect frontend query in `ChatInterface.tsx` that was looking for the `source` field inside the `metadata` JSONB object instead of as a top-level column in the `memories` table. The query was corrected to `eq('source', 'conversation_summary')`.
+    -   **Topic Cloud**: The `TopicCloudPanel` on the Memory page was updated to only fetch and display topics from these high-level conversation summaries, resolving an issue where it was being spammed with keywords from every individual message.
+    -   **Misc Bugs**: Multiple smaller bugs were resolved during development, including a `onSend is not a function` error in the `ChatInputBar` and a `406 Not Acceptable` error from the database due to the frontend expecting a single record when duplicates were present. 

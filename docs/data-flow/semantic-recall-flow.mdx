@@ -1,0 +1,54 @@
+# Semantic Recall Flow
+
+This document describes the data flow for semantic recall.
+
+This flow illustrates how Liara searches for and recalls relevant long-term memories based on a user's query. This is a core feature for providing contextually aware responses and is initiated by a specific search action on the frontend.
+
+<Diagram>{`
+sequenceDiagram
+    actor User
+    participant Frontend as React UI
+    participant Backend as Express API
+    participant AI as OpenAI
+    participant Database as Supabase DB
+    
+    User->>Frontend: Initiates a memory search with a query
+    activate Frontend
+    
+    Frontend->>Backend: 1. Search Request<br/>POST /api/memories/search with the search query
+    activate Backend
+
+    note right of Backend: 2. Create Embedding
+    Backend->>AI: Sends the query text to OpenAI to get a vector embedding.
+    activate AI
+    AI-->>Backend: Returns the vector embedding.
+    deactivate AI
+
+    note right of Backend: 3. Semantic Search
+    Backend->>Database: Calls the 'search_memories' RPC function with the embedding.
+    activate Database
+    note over Database: Uses 'pgvector' to find memories with the most similar embeddings.
+    Database-->>Backend: Returns a list of matching memories.
+    deactivate Database
+
+    Backend-->>Frontend: 4. Return Results<br/>Forwards the list of relevant memories.
+    deactivate Backend
+    
+    Frontend->>User: Displays the recalled memories.
+    deactivate Frontend
+`}</Diagram>
+
+## Step-by-Step Breakdown
+
+1.  **Search Request**: The user performs an action in the <Keyword to="/app/system-overview/architecture/frontend">Frontend</Keyword> to search their memories with a specific text query. The frontend sends this query to the `/api/memories/search` endpoint on the <Keyword to="/app/system-overview/architecture/backend">Backend</Keyword>.
+
+2.  **Create Embedding**: The backend receives the query and sends the text to the <Keyword>OpenAI</Keyword> API to generate a vector <Keyword>embedding</Keyword>. This converts the semantic meaning of the text into a numerical vector.
+
+3.  **Semantic Search**: The backend then invokes a Remote Procedure Call (RPC) on the <Keyword to="/app/system-overview/architecture/database">Supabase Database</Keyword>, calling the `search_memories` function.
+    - It passes the newly generated query embedding to the function.
+    - The `search_memories` function uses the `pgvector` extension to perform a cosine similarity search against all the embeddings stored in the `memories` table.
+    - It returns a list of the most semantically similar memories, ranked by their similarity score.
+
+4.  **Return Results**: The backend forwards the search results to the frontend, which then displays the recalled memories to the user.
+
+The core of this flow is the call to the `search_memories` PostgreSQL function, which uses the `pgvector` extension to perform a cosine similarity search between the user's message <Keyword>embedding</Keyword> and the embeddings of all past conversation summaries. 

@@ -1,0 +1,63 @@
+# Deployment Diagram
+
+This diagram illustrates the high-level deployment architecture of the Liara application. It shows how the different services are containerized and deployed within a cloud environment, and how they interact with external services.
+
+## Production Deployment Environment
+
+<Diagram>{`
+graph TD;
+    subgraph "User's Browser"
+        A[User]
+    end
+
+    subgraph "Cloud Provider (e.g., Vercel, Azure, AWS)"
+        subgraph "Virtual Private Network"
+            B[Load Balancer / Gateway] --> C["Frontend Container<br/>(React/Vite)"];
+            B --> D["Backend Container<br/>(Node.js/Express)"];
+        end
+    end
+
+    subgraph "Supabase Cloud"
+        direction LR
+        E[Supabase Project]
+        F[PostgreSQL DB]
+        G[Auth Service]
+        H[Storage]
+        
+        E --- F
+        E --- G
+        E --- H
+    end
+    
+    subgraph "OpenAI Cloud"
+        I[OpenAI API]
+    end
+
+    A -- "HTTPS" --> B;
+    C -- "API Calls" --> D;
+    D -- "DB Operations" --> E;
+    D -- "AI Processing" --> I;
+
+    classDef user fill:#0a407a,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef container fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff;
+    classDef cloud fill:#1C2833,stroke:#fff,stroke-width:1px,color:#fff;
+    classDef external fill:#9B59B6,stroke:#fff,stroke-width:1.5px,color:#fff;
+
+    class A user;
+    class C,D container;
+    class E,I external;
+`}</Diagram>
+
+## Component Descriptions
+
+-   **Load Balancer / Gateway**: The single entry point for all user traffic. It routes incoming requests to the appropriate container, typically serving the frontend application directly and forwarding API calls to the backend.
+
+-   **Frontend Container**: A container running the static, compiled <Keyword to="/app/system-overview/architecture/frontend">React</Keyword> application. It is responsible for the user interface and client-side logic.
+
+-   **Backend Container**: A container running the <Keyword to="/app/system-overview/backend/server-overview">Node.js</Keyword> server. It handles all API logic, business processes, and orchestrates communication between the database and AI services.
+
+-   **Supabase Cloud**: Our managed backend service provider. It hosts the <Keyword to="/app/system-overview/database/01-schema-and-tables">PostgreSQL Database</Keyword>, handles user authentication, and provides object storage. Our backend container interacts with it via its secure client libraries.
+
+-   **OpenAI Cloud**: An external service that the backend communicates with to access large language models for chat generation and other AI tasks.
+
+This containerized approach using **Docker** allows for consistent, isolated, and scalable deployments. 

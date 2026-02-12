@@ -1,0 +1,51 @@
+# Edge Function: `query-memories`
+
+This document describes the `query-memories` edge function.
+
+This Edge Function implements a Retrieval-Augmented Generation (RAG) pipeline to answer user questions based on their stored memories.
+
+## Purpose
+
+The primary purpose of this function is to provide specific, fact-based answers drawn directly from a user's long-term memory. Unlike a general chat, this endpoint is designed to first *retrieve* relevant information and then use that information to *generate* a grounded answer, preventing the AI from hallucinating or using external knowledge.
+
+## Execution Flow
+
+1.  **Get User Input**: The function receives a `question` and `userId` in the request body.
+2.  **Fetch API Key**: It invokes another Edge Function to securely retrieve an OpenAI API key.
+3.  **Fetch Personality**: It loads the `Default Chat System Prompt` from the <Keyword to="/app/system-overview/tables/personality">`personality`</Keyword> table to configure the LLM model and parameters.
+4.  **Embed Question**: The user's `question` is sent to the OpenAI `/v1/embeddings` endpoint to be converted into a vector embedding.
+5.  **Semantic Search**: The function calls the `search_memories` database function (RPC), passing in the question's vector embedding. The database performs a similarity search and returns the top 5 most relevant memories from the <Keyword to="/app/system-overview/tables/memories">`memories`</Keyword> table.
+6.  **Contextual Prompting**: A new, detailed prompt is constructed. This prompt contains the original question along with the full text of the retrieved memory snippets. It explicitly instructs the AI to answer *only* using the provided context.
+7.  **Generate Answer**: This new prompt is sent to the OpenAI `/v1/chat/completions` endpoint.
+8.  **Return Response**: The final, synthesized answer from the AI is returned in the response. If no relevant memories were found in step 5, it returns a message indicating that.
+
+## Request Body
+
+````json
+{
+  "question": "string",
+  "userId": "uuid"
+}
+````
+
+## Response Body
+
+On success, it returns a JSON object containing the final answer.
+
+````json
+{
+  "answer": "string"
+}
+````
+
+On failure, it returns a 500 status code with an error message:
+
+````json
+{
+  "error": "string",
+  "details": "string"
+}
+````
+```
+
+—

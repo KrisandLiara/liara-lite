@@ -1,0 +1,26 @@
+project_id = "uymkohnvvlhvrldgymbk"
+
+# Windows note:
+# Some Windows setups reserve/exclude TCP port ranges that include the default Supabase local ports
+# (54321+). If you see Docker errors like:
+#   "Ports are not available ... listen tcp 0.0.0.0:54322: bind: An attempt was made to access a socket in a way forbidden by its access permissions."
+# Move the local ports to a safe range outside the excluded block (example below uses 5542x).
+
+[api]
+enabled = true
+port = 55421
+
+[db]
+port = 55422
+
+[db.pooler]
+enabled = true
+port = 55429
+
+[studio]
+enabled = true
+port = 55423
+
+[inbucket]
+enabled = true
+port = 55424

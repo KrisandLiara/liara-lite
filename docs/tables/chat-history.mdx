@@ -1,0 +1,25 @@
+# Table: `chat_history`
+
+This table stores the full history of every message in every conversation.
+
+The `chat_history` table is the chronological log of every message exchanged within a conversation. It is one of the most frequently written-to tables in the application.
+
+## Purpose
+
+This table's primary purpose is to store the raw content of the conversation. Each row represents a single "turn" from either the user or the AI assistant. By ordering these records by their creation time, the full history of a chat can be perfectly reconstructed.
+
+## Column Breakdown
+
+| Column              | Type          | Description                                                                                               |
+|---------------------|---------------|-----------------------------------------------------------------------------------------------------------|
+| `id` (PK)           | `uuid`        | The unique identifier for this specific message.                                                          |
+| `chat_session_id` (FK)| `uuid`      | A foreign key that links this message to a record in the <Keyword to="/app/system-overview/tables/chat-sessions">`chat_sessions`</Keyword> table. |
+| `user_id` (FK)      | `uuid`        | A foreign key linking to the user who is part of the conversation.                                        |
+| `role`              | `text`        | Indicates who sent the message. This will be either `user` or `assistant`.                                |
+| `content`           | `text`        | The actual text content of the message.                                                                   |
+| `metadata`          | `jsonb`       | A flexible JSON column to store any extra information about the message, such as client-side flags.       |
+| `created_at`        | `timestamptz` | The timestamp for when the message was created, used for ordering the conversation.                       |
+
+## Relationships
+
+- **Belongs to a `chat_session`**: Every message must belong to a session, enforced by the `chat_session_id` foreign key. This is the primary relationship that structures the conversation data. 

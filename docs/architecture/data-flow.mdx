@@ -1,0 +1,109 @@
+---
+title: Data Flow Diagrams
+description: Visualizing the key data flows within the Liara system.
+---
+
+import { DiagramSpoiler } from '@/components/system-overview/DiagramSpoiler';
+
+## Data Flow Diagrams
+
+This section provides detailed diagrams for the most critical user-facing and backend processes in the Liara application.
+
+### 1. Core Chat Message Flow
+
+This diagram shows the sequence of events when a user sends a message and receives a response from Liara.
+
+<DiagramSpoiler>
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant OpenAI
+    participant Database
+
+    User->>Frontend: Enters and sends message
+    Frontend->>Backend: POST /api/chat (with message history)
+    Backend->>OpenAI: Request chat completion (with full context)
+    OpenAI-->>Backend: Stream response chunks
+    Backend-->>Frontend: Stream response chunks
+    Frontend-->>User: Display response in real-time
+    
+    Frontend->>Backend: POST /api/save-chat (once complete)
+    Backend->>Database: INSERT into `chat_messages`
+    Database-->>Backend: Confirm save
+    Backend-->>Frontend: Acknowledge save
+```
+</DiagramSpoiler>
+
+### 2. Memory Enrichment & Save Flow
+
+This diagram illustrates the backend process for how a completed chat conversation is turned into a long-term, searchable memory.
+
+<DiagramSpoiler>
+```mermaid
+sequenceDiagram
+    participant Backend
+    participant OpenAI
+    participant Database
+
+    Backend->>OpenAI: 1. Send conversation text for summarization
+    OpenAI-->>Backend: Return one-sentence summary and topic
+    
+    Backend->>OpenAI: 2. Send conversation text for tagging
+    OpenAI-->>Backend: Return relevant keywords/tags
+
+    Backend->>OpenAI: 3. Send key messages for embedding
+    OpenAI-->>Backend: Return vector embeddings
+    
+    Backend->>Database: 4. INSERT memory (summary, topic, tags, embeddings)
+    Database-->>Backend: Confirm memory saved
+```
+</DiagramSpoiler>
+
+### 3. ChatGPT Import Pipeline Flow
+
+This diagram details the steps involved in the user-initiated import process, from file upload to final database insertion. It highlights the separation between the client-side parsing, backend enrichment, and final loading steps.
+
+<DiagramSpoiler>
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend (React App)
+    participant Backend (Node.js API)
+    participant OpenAI
+    participant Database (Supabase)
+
+    User->>Frontend: 1. Uploads `conversations.json`
+    Frontend->>Frontend: 2. Parses file, displays preview grid
+    
+    User->>Frontend: 3. Selects conversations & clicks "Enrich"
+    Frontend->>Backend: 4. POST /api/import/enrich (with raw text)
+    activate Backend
+
+    par "For each message"
+        Backend->>OpenAI: 5a. Generate Embedding
+        OpenAI-->>Backend: Return Vector
+        
+        Backend->>OpenAI: 5b. Generate Summary & Tags
+        OpenAI-->>Backend: Return JSON
+    end
+    
+    alt Real-time Logging
+        Backend-->>Frontend: 6. Stream logs via SSE (/api/import/stream-logs)
+    end
+
+    Backend-->>Frontend: 7. Return fully enriched data
+    deactivate Backend
+
+    User->>Frontend: 8. Reviews enriched data and clicks "Load"
+    Frontend->>Backend: 9. POST /api/import/load (with all selected data)
+    activate Backend
+
+    Backend->>Database: 10. UPSERT into `memories` table
+    Database-->>Backend: Confirm save
+    deactivate Backend
+    
+    Backend-->>Frontend: 11. Acknowledge load complete
+```
+</DiagramSpoiler> 

@@ -1,0 +1,56 @@
+# Import Pipeline Data Flow
+
+This page explains the end-to-end flow for the Import Pipeline, from raw chat export to enriched, loaded data with analytics-ready metadata.
+
+<Diagram>
+{`
+sequenceDiagram
+  participant U as User
+  participant FE as Frontend (Import UI)
+  participant BE as Backend (Express)
+  participant FS as File Store (preprocessed/enriched)
+  participant DB as Supabase (Postgres)
+  participant AI as LLM (OpenAI)
+
+  U->>FE: Upload conversations.json
+  FE->>FE: Parse JSON -> Preview conversations
+  FE->>FE: Select Include vs Enrich
+  FE->>BE: Start Enrichment (selection, options)
+  BE->>AI: Summaries, tags, NER (as configured)
+  AI-->>BE: Enrichment results (streamed)
+  BE->>FS: Save enriched file
+  FE-->>U: Live status + token/cost estimates
+  U->>FE: Load to database
+  FE->>BE: Load request (selected enriched file)
+  BE->>DB: Upsert conversations, messages, memories
+  DB-->>BE: Write results
+  BE-->>FE: Loaded summary (inserted/updated)
+`}
+</Diagram>
+
+## Stages
+
+1. File Processing
+- User selects the raw export file and previews parsed conversations
+- Lightweight client-side parsing; no DB writes yet
+
+2. Selection & Estimation
+- Separate Include vs Enrich selections
+- Token estimator counts only enriched conversations
+- Real-time model pricing and time estimates
+
+3. Enrichment
+- Summaries, tags, and optional NER
+- Streaming status with per-message error tracking
+- Enriched output saved as a file in the backend
+
+4. Load
+- Select enriched file -> preview -> upsert into DB
+- Idempotent writes, safe to retry
+
+## Key Links
+
+- <Keyword to="/app/system-overview/features/import-pipeline-ui">Import Pipeline UI</Keyword>
+- <Keyword to="/app/system-overview/features/import-code-tagging">Code Detection & Tagging</Keyword>
+- <Keyword to="/app/system-overview/modules/memory-system/embedding-pipeline">Embedding Pipeline</Keyword>
+- <Keyword to="/app/system-overview/database/01-schema-and-tables">Database Schema</Keyword>

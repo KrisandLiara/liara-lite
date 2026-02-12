@@ -1,0 +1,53 @@
+# Recall Modes
+
+Recall is the process of retrieving stored memories to provide context for the current conversation. The system employs several modes of recall, triggered either directly by the user or proactively by the AI agent.
+
+This functionality is currently under design and development.
+
+## Recall Triggers and Types
+
+<Diagram>
+{`
+graph TD
+    subgraph "Recall Triggers"
+        A["User's Prompt"]
+        B["AI's Internal Logic (Proactive)"]
+    end
+
+    subgraph "Recall Types"
+        C["Semantic Search<br/>(Find by meaning)"]
+        D["Temporal Search<br/>(Find by date)"]
+        E["Direct Search<br/>(Find by tag/ID)"]
+    end
+
+    subgraph "Result"
+        F["Relevant Memories"]
+    end
+
+    A -- "e.g., 'What do you know about Project X?'" --> C
+    A -- "e.g., 'What did we discuss last week?'" --> D
+    B -- "Analyzes conversation flow" --> C
+    B -- "Needs specific info" --> E
+    
+    C --> F
+    D --> F
+    E --> F
+
+    style A fill:#0a407a,stroke:#fff,stroke-width:2px,color:#fff
+    style B fill:#8c3b9c,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+### Recall Types Explained:
+
+1.  **Semantic Recall (Vector Search):**
+    *   **How it works:** The most common and powerful type of recall. The system uses the <Keyword to="/app/system-overview/modules/memory-system/embedding-pipeline">embedding pipeline</Keyword> to find memories that are conceptually related to the current conversation, even if they don't share keywords. This allows for discovering hidden connections and retrieving information based on meaning alone.
+    *   **Trigger:** Can be initiated by the user's prompt (e.g., "What have we discussed about system architecture?") or proactively by the AI when it detects a relevant topic emerging in the conversation.
+
+2.  **Temporal Recall (Time-Based Search):**
+    *   **How it works:** Retrieves memories by filtering on their `created_at` or `updated_at` timestamps. This is useful for recalling conversations or events from a specific time period.
+    *   **Trigger:** Typically prompted by the user with phrases like "last week," "yesterday," "on Tuesday," or "in early May." The backend parses these natural language queries into date ranges.
+
+3.  **Direct Recall (Metadata Search):**
+    *   **How it works:** Retrieves memories by performing an exact match or filter on specific metadata fields. This is most commonly used for finding all memories associated with a certain <Keyword to="/app/system-overview/modules/memory-system/tag-cloud">tag</Keyword>, but can also be used for other fields like `source_type` or a unique memory `id`.
+    *   **Trigger:** Mostly used internally by the AI for precise lookups when it needs a specific piece of information. It also powers the user-facing "search by tag" functionality on the Memory page.

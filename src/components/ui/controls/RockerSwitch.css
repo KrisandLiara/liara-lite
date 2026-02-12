@@ -1,0 +1,62 @@
+.rocker-switch {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: #374151; /* gray-700 */
+  border: 2px solid #4b5563; /* gray-600 */
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  flex-shrink: 0;
+}
+
+.rocker-switch::before {
+  content: '0';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af; /* gray-400 */
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.rocker-switch::after {
+  content: '1';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af; /* gray-400 */
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.rocker-switch-handle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: #d1d5db; /* gray-300 */
+  border-radius: 50%;
+  transition: transform 0.2s ease-in-out;
+}
+
+.rocker-switch.is-test-mode {
+  background-color: #451a03; /* amber-900 - dark background */
+  border-color: #fcd34d; /* amber-300 - bright border */
+}
+
+.rocker-switch.is-test-mode .rocker-switch-handle {
+  transform: translateX(26px);
+  background-color: #fcd34d; /* amber-300 - bright handle */
+}
+
+.rocker-switch.is-test-mode::before {
+  color: #78716c; /* stone-500 - muted "0" */
+}
+
+.rocker-switch.is-test-mode::after {
+  color: #451a03; /* amber-900 - dark "1" on bright background */
+} 

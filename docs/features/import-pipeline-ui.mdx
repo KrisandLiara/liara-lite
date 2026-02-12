@@ -1,0 +1,331 @@
+# Import Pipeline UI v0.15.9
+
+The Import Pipeline UI has been completely redesigned to provide a professional, space-efficient workflow interface with integrated token estimation and real-time cost feedback.
+
+> **Latest Updates**: 
+> - See [Recent Work: Preprocessed File Management System (v0.15.7)](/docs/project/recent-work#preprocessed-file-management-system-v0157) for the file management capabilities.
+> - New in v0.15.9: Enhanced file selector with modern glassy design and improved file handling.
+
+## 🎯 Overview
+
+The new import interface transforms the complex data import process into an intuitive, compact workflow that guides users through three main steps while providing comprehensive cost estimation and real-time feedback.
+
+### Key Features
+
+- **Modern File Management**: Glassy, modern file selector with intuitive delete functionality
+- **Smart File Organization**: Clear visual distinction between preprocessed and enriched files
+- **Integrated Token Estimation**: Real-time cost calculation with multi-model support
+- **Ultra-Compact Layout**: 2x2 grid design maximizing screen space efficiency  
+- **Smart Token Counting**: Only estimates costs for AI-enriched conversations
+- **Visual Progress Indicators**: Clear step progression with completion status
+- **Professional UX**: Modern design with consistent spacing and typography
+
+## 🏗️ Architecture
+
+### Component Structure
+
+```
+ImportPage/
+├── UnifiedFileSelector    # Enhanced file management
+├── CompactStep1          # File processing
+├── CompactStep2          # Data enrichment  
+├── TokenInfoBlock        # Cost estimation
+├── CompactStep3          # Database loading
+├── DataPreview           # Conversation review
+└── LiveStatusConsole     # Real-time logging
+```
+
+### File Selector Component
+
+The new UnifiedFileSelector component provides a modern, intuitive interface for file management:
+
+```typescript
+interface UnifiedFileSelectorProps {
+  selectedFile: string | null;
+  onFileSelect: (filename: string | null, type: 'preprocessed' | 'enriched') => void;
+  onPreviewFile?: (filename: string, type: 'preprocessed' | 'enriched') => void;
+  disabled?: boolean;
+  placeholder?: string;
+  showNewOption?: boolean;
+  compact?: boolean;
+}
+```
+
+Features:
+- **Type-Safe File Handling**: Distinct handling for preprocessed and enriched files
+- **Modern UI Elements**: Glassy confirmation dialogs with backdrop blur
+- **Intuitive Delete Flow**: Easy file deletion with clear visual feedback
+- **Smart Preview System**: Correct preview loading based on file type
+- **Compact Mode**: Optional compact display for space efficiency
+
+### Layout System
+
+The interface uses a custom CSS Grid system defined in `ImportPage.css`:
+
+```css
+.import-page-grid {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 12px;
+  height: fit-content;
+}
+
+.import-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.import-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+```
+
+## 🎨 Design System
+
+### Color Scheme
+- **Background**: `slate-900` (consistent with chat interface)
+- **Cards**: `slate-800` with `slate-700` borders
+- **Success**: Emerald theme (`#10b981`)
+- **Info**: Sky blue theme (`#38bdf8`)
+- **Warning**: Amber theme (`#f59e0b`)
+
+### Typography
+- **Titles**: `text-base` (16px) for main headings
+- **Descriptions**: `text-xs` (12px) for secondary text
+- **Labels**: `text-xs` with `font-medium` for form labels
+- **Buttons**: Compact sizing with `h-8` (32px) and `h-7` (28px)
+
+### Spacing
+- **Card padding**: `p-2` (8px) for compact feel
+- **Content spacing**: `space-y-2` (8px gaps)
+- **Grid gaps**: `gap-2` (8px) between elements
+
+## 📊 Token Estimation System
+
+### Smart Counting Logic
+
+The token estimation system intelligently counts only conversations selected for enrichment:
+
+```typescript
+const getSelectedConversations = () => {
+  if (!preprocessedData || preprocessedData.length === 0) return [];
+  
+  // Only count conversations selected for enrichment (AI processing)
+  return preprocessedData.filter(convo => enrichSelection.has(convo.id));
+};
+```
+
+### Multi-Model Support
+
+Users can select from multiple AI models to compare costs:
+
+- **GPT-4 Turbo**: $10.00 / 1M input tokens, $30.00 / 1M output tokens
+- **GPT-4o**: $5.00 / 1M input tokens, $15.00 / 1M output tokens  
+- **GPT-4o Mini**: $0.15 / 1M input tokens, $0.60 / 1M output tokens
+- **GPT-3.5 Turbo**: $0.50 / 1M input tokens, $1.50 / 1M output tokens
+
+### Real-Time Updates
+
+The TokenInfoBlock component automatically updates when:
+- Conversations are selected/deselected for enrichment
+- AI model is changed in the dropdown
+- New data is processed or loaded
+
+## 🔧 Component Details
+
+### Step 1: Process File
+**Layout**: Top/bottom row structure
+- **Top Row**: File selector (flex: 1) + Process button (auto-height)
+- **Bottom Row**: Test checkbox (flex: 1) + Retry dropdown (flex: 1)
+
+```jsx
+<div className="step1-top-row">
+  <div className="step1-file-area">
+    <FileUpload onFileSelect={setFile} />
+  </div>
+  <div className="step1-button-area">
+    <Button className="compact-button glassy-primary w-full">
+      Process File
+    </Button>
+  </div>
+</div>
+```
+
+### Step 2: Enrich Data
+**Layout**: Horizontal preset/button layout
+- **Top Row**: Quick presets (flex: 1) + Enrich button (fixed width)
+- **Bottom**: Collapsible advanced options
+
+**Quick Presets**:
+- **Quick Test**: `lines-10` (10 lines for rapid testing)
+- **Standard**: `conversations-50` (50 conversations)
+- **Full Import**: `conversations--1` (all selected)
+
+### Step 3: Load to Database
+**Layout**: File selection + action buttons
+- **Top Row**: File dropdown (160px) + Preview/Load buttons (flex: 1 each)
+- **Bottom**: Clear section (test mode only)
+
+### Token Info Block
+**Features**:
+- Model selection dropdown
+- Real-time statistics (conversations, messages, tokens)
+- Cost breakdown (input/output/total)
+- Estimated processing time
+
+## 🚀 User Experience Improvements
+
+### Visual Feedback
+- **Step Progress**: Thin progress bar shows current step
+- **Completion Status**: Green checkmarks for completed steps
+- **Loading States**: Spinners and disabled states during processing
+- **Error Handling**: Clear error messages with retry options
+
+### Workflow Guidance
+- **Sequential Activation**: Steps become available as previous ones complete
+- **Smart Defaults**: Reasonable preset selections for common use cases
+- **Contextual Help**: Tooltips and descriptions for complex features
+- **Undo/Retry**: Clear buttons for failed operations
+
+### Space Efficiency
+- **Compact Cards**: Minimum 200px height (down from 400px)
+- **Reduced Padding**: `p-2` instead of `p-4` for tighter spacing
+- **Optimized Buttons**: 26px/24px heights with compact fonts
+- **Intelligent Layout**: Components sized to content, not fixed dimensions
+
+## 📱 Responsive Design
+
+The interface adapts to different screen sizes:
+
+```css
+@media (max-width: 768px) {
+  .import-page-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .import-right-column {
+    order: -1; /* Token info moves to top on mobile */
+  }
+}
+```
+
+## 🔄 Data Flow
+
+### 1. File Processing
+```
+User uploads file → Frontend parses JSON → Data preview shows conversations
+```
+
+### 2. Selection Phase
+```
+User selects conversations → Include/Enrich checkboxes → Token counter updates
+```
+
+### 3. Enrichment Phase
+```
+User clicks Enrich → Backend processes with AI → Real-time progress updates
+```
+
+### 4. Loading Phase
+```
+User selects enriched file → Preview data → Load to database
+```
+
+## 🎯 Performance Optimizations
+
+### Efficient Rendering
+- **Memoized Calculations**: Token estimates cached until data changes
+- **Lazy Loading**: Components only render when data is available
+- **Debounced Updates**: Rapid selection changes don't cause excessive re-renders
+
+### Memory Management
+- **Cleanup**: Unused components unmount properly
+- **Data Pruning**: Large datasets processed in chunks
+- **Cache Management**: Token estimates cached per model/selection
+
+## 🔧 Technical Implementation
+
+### CSS Grid System
+Custom grid layouts provide precise control over component positioning:
+
+```css
+.step1-content {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 8px;
+  height: 100%;
+}
+
+.step1-top-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 8px;
+  align-items: stretch;
+}
+```
+
+### React Context Integration
+All components use the centralized ImportContext for state management:
+
+```typescript
+const {
+  preprocessedData,
+  enrichSelection,
+  includeSelection,
+  config,
+  handleEnrichStream,
+  // ... other state
+} = useImport();
+```
+
+### Theme Integration
+Components use the unified Liara theme system:
+
+```typescript
+import { liaraClasses } from '@/lib/theme/liara-theme';
+
+<div className={liaraClasses.bgPrimary}>
+  <span className={liaraClasses.textSecondary}>Content</span>
+</div>
+```
+
+## 🚀 Future Enhancements
+
+### Planned Features
+- **Batch Processing**: Handle multiple files simultaneously
+- **Advanced Filtering**: Filter conversations by date, length, or content
+- **Export Options**: Save enriched data in different formats
+- **Template System**: Save and reuse enrichment configurations
+
+### Performance Improvements
+- **Streaming Processing**: Process large files without blocking UI
+- **Progressive Loading**: Show results as they become available
+- **Background Processing**: Continue work when page is not visible
+
+### UX Enhancements
+- **Drag & Drop**: Drag files directly onto the interface
+- **Keyboard Shortcuts**: Power user shortcuts for common actions
+- **Undo/Redo**: Full action history with rollback capability
+- **Bulk Operations**: Select/deselect multiple conversations at once
+
+## 📊 Metrics & Analytics
+
+### Performance Metrics
+- **Load Time**: Sub-second interface initialization
+- **Processing Speed**: Real-time token calculation updates
+- **Memory Usage**: Optimized for large conversation datasets
+- **Error Rate**: Robust error handling with recovery options
+
+### User Experience Metrics
+- **Workflow Completion**: High success rate for full import process
+- **Error Recovery**: Clear guidance when issues occur
+- **Learning Curve**: Intuitive interface reduces training time
+- **Efficiency**: Compact layout maximizes productive screen space
+
+---
+
+*This documentation reflects the v0.15.6 import pipeline redesign, representing a complete transformation of the import user experience while maintaining full functionality and adding powerful new features.* 

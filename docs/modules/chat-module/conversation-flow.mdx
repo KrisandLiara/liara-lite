@@ -1,0 +1,48 @@
+# Conversation Flow Overview
+
+The conversation flow is the end-to-end process that occurs when a user sends a message and receives a response from Liara. It's a critical pathway that involves every major component of the system.
+
+## Sequence of Events
+
+This diagram details the lifecycle of a single chat message.
+
+<Diagram>
+{`
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Database
+    participant AI Service
+
+    User->>+Frontend: Enters and sends a new message.
+    Frontend->>+Backend: POST /api/chat with the message payload.
+    
+    Backend->>+Database: 1. Retrieve recent chat history.
+    Backend->>Database: 2. Perform <br/> a semantic search for relevant long-term memories.
+    Database-->>-Backend: Return conversation history and memory context.
+
+    Backend->>+AI Service: 3. Construct a detailed prompt including the user's message, history, memories, and the core <br/> <Keyword to="/app/system-overview/modules/chat-module/personality-integration">AI Personality</Keyword>.
+    
+    AI Service-->>-Backend: 4. Stream back the AI-generated response in chunks.
+    
+    Backend-->>-Frontend: 5. Stream the response directly to the frontend.
+    Frontend-->>-User: Display the incoming response in real-time.
+    
+    Backend->>+Database: 6. Once the full response is received, save the user message and the AI response to the "chat_history" table.
+    Database-->>-Backend: Confirm save.
+`}
+</Diagram>
+
+### Key Stages:
+
+1.  **Message Submission:** The user sends a message through the UI. The frontend makes a POST request to the backend's `/api/chat` endpoint.
+2.  **Context Assembly:** The backend receives the request and begins assembling context. This involves:
+    *   Fetching the recent conversation history from the database.
+    *   Querying the <Keyword to="/app/system-overview/modules/memory-system/overview">Memory System</Keyword> for relevant long-term memories using a semantic search.
+3.  **Prompt Construction:** The retrieved history and memories are combined with the user's new message and the AI's core <Keyword to="/app/system-overview/ai-behavior/system-prompt-spec">System Prompt</Keyword> to create a comprehensive prompt.
+4.  **AI Interaction:** This complete prompt is sent to the external Large Language Model (LLM).
+5.  **Response Streaming:** The LLM streams its response back to the backend, which immediately forwards these chunks to the frontend. This allows the user to see the response as it's being generated.
+6.  **Persistence:** After the full response is delivered, the backend saves the new user message and the complete AI response to the database for future context.
+
+-data coming- 

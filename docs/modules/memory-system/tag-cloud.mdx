@@ -1,0 +1,78 @@
+# Tag Cloud & Multi-Stage Search
+
+This document details the primary user interface for exploring memories: the Tag Cloud. It breaks down the key components and the new multi-stage search mechanism that provides a more controlled and intuitive exploration experience.
+
+## UI Component Breakdown
+
+The user's journey from a high-level tag overview to a specific memory involves several key components working in concert.
+
+### 1. The `<TagCloudView />`
+
+This is the main entry point for memory exploration.
+
+-   **Function**: It calls the `get_all_user_tags` database function to fetch every unique tag associated with the user's memories, along with a count of how many times each tag appears.
+-   **Display**: It renders these tags in a "cloud" format where the font size of each tag is proportional to its frequency. More common tags appear larger, providing an immediate visual cue to the most prevalent topics in the user's memory.
+-   **Action**: Clicking a tag navigates the user to the `<MemoriesByTagView />`, passing the selected tag as part of the URL.
+
+### 2. The `<MemoriesByTagView />`
+
+This view is the heart of the new multi-stage search experience. It is designed to give the user precise control over the search scope.
+
+-   **Initial State (Tag Match)**: Upon loading, the view automatically performs a search for memories that have an **exact tag match**. It displays these results immediately.
+-   **Search Expansion**: The view presents three buttons: `Tag`, `Keyword`, and `Semantic`.
+    -   **Tag**: Shows the initial, exact-match results.
+    -   **Keyword**: Clicking this button initiates a new search for memories where the tag appears as a keyword in the content.
+    -   **Semantic**: This button triggers a vector-based search for conceptually similar memories. A slider is also revealed, allowing the user to fine-tune the required similarity score.
+
+### 3. The `<MemoryDetail />` View
+
+Clicking any memory card opens a detailed dialog. This view uses contextual information from the search to enhance clarity.
+
+-   **Context Badges**: It displays prominent badges indicating how the memory was found (e.g., "Tag Match", "Keyword Match").
+-   **Keyword Highlighting**: If the memory was discovered via a `Keyword` search, the specific search term is highlighted directly in the summary and content text, making it easy to spot.
+
+## The Multi-Stage Search Data Flow
+
+The diagram below illustrates the new, sequential data flow when a user clicks a tag in the cloud. This approach is more deliberate, preventing the system from performing broad, expensive searches by default.
+
+<Diagram>{`
+sequenceDiagram
+    participant User
+    participant TagCloudView
+    participant MemoriesByTagView
+    participant Backend API
+    participant Database (Postgres)
+
+    User->>TagCloudView: Clicks on "Car" tag
+    activate TagCloudView
+    TagCloudView->>MemoriesByTagView: Navigates to /tags/Car
+    deactivate TagCloudView
+    
+    activate MemoriesByTagView
+    MemoriesByTagView->>Backend API: GET /api/memories/by-tag/Car
+    activate Backend API
+    Backend API->>Database: Find exact tag matches<br/>(WHERE 'Car' = ANY(tags))
+    Database-->>Backend API: Returns memories
+    Backend API-->>MemoriesByTagView: 200 OK: [ ...memories ]
+    deactivate Backend API
+    MemoriesByTagView->>MemoriesByTagView: Renders initial results
+
+    User->>MemoriesByTagView: Clicks "Keyword" button
+    MemoriesByTagView->>Backend API: POST /api/memories/search/hybrid<br/>{ query: "Car" }
+    activate Backend API
+    Backend API->>Database: Perform keyword & semantic search...
+    Database-->>Backend API: Returns hybrid results
+    Backend API-->>MemoriesByTagView: 200 OK: { results: [ ... ] }
+    deactivate Backend API
+    MemoriesByTagView->>MemoriesByTagView: Filters and renders Keyword results
+    
+    User->>MemoriesByTagView: Clicks "Semantic" button
+    MemoriesByTagView->>Backend API: POST /api/memories/search/hybrid<br/>{ query: "Car", threshold: 0.78 }
+    activate Backend API
+    Backend API->>Database: Perform keyword & semantic search...
+    Database-->>Backend API: Returns hybrid results
+    Backend API-->>MemoriesByTagView: 200 OK: { results: [ ... ] }
+    deactivate Backend API
+    MemoriesByTagView->>MemoriesByTagView: Filters and renders Semantic results
+    deactivate MemoriesByTagView
+`}</Diagram> 

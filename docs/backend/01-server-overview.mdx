@@ -1,0 +1,43 @@
+# Backend: Node.js Server Overview
+
+The backend is a standard **Node.js** server using the **Express** framework. It serves as the central hub for all application logic, handling everything from API requests to database interactions and communication with external AI services.
+
+The primary goal of this architecture is to create a clear separation of concerns, making the system easier to develop, debug, and maintain.
+
+## Key Responsibilities
+
+-   **API Handling**: Exposes a secure, RESTful API for the frontend to consume. This includes endpoints for chat, memory management, user data, and more.
+-   **Authentication**: Works with Supabase to manage user authentication and session validation, ensuring that all protected endpoints are only accessible to logged-in users.
+-   **Business Logic**: Contains all core application logic. This is where processes like assembling context for the AI, consolidating memories, and handling user-specific requests are orchestrated.
+-   **Database Interaction**: Acts as the sole gatekeeper to the Supabase PostgreSQL database. All data reads and writes go through the backend's service layer.
+-   **External Service Integration**: Manages all communication with third-party services, primarily the Large Language Model (e.g., OpenAI). This keeps API keys and complex integration logic secure on the server side.
+
+## Project Structure
+
+The backend code is located in the `liara-backend` directory and follows a standard MVC-like (Model-View-Controller) pattern, adapted for an API-only service:
+
+-   `src/routes`: Defines the API endpoints (e.g., `/api/chat`). Each route file maps HTTP methods (GET, POST, etc.) to specific controller functions.
+-   `src/controllers`: Handles the business logic for each route. A controller function receives the request, calls the necessary services, and sends back the final response.
+-   `src/services`: Contains the logic for interacting with the database via the Supabase client. This abstracts the raw database queries away from the controllers.
+-   `src/middleware`: Includes Express middleware functions. The most important is the authentication middleware that protects routes, but it also includes error handlers and loggers.
+
+## Startup
+
+The server is started using the `npm run dev` command within the `liara-backend` directory. This command utilizes `nodemon` to watch for file changes and automatically restart the server, streamlining the development process. For the full stack, use the unified <Keyword to="/app/system-overview/development/dev-environment-script">dev script</Keyword>.
+
+## Related
+
+- <Keyword to="/app/system-overview/backend/02-api-endpoints">API Endpoints</Keyword>
+- <Keyword to="/app/system-overview/edge-functions">Edge Functions</Keyword>
+- <Keyword to="/app/system-overview/middleware-auth">Middleware & Auth</Keyword>
+
+> Basic architecture diagram showing routes → controllers → Supabase service layer.
+
+<Diagram>
+{`
+graph TD
+    A[API Route] --> B(Controller)
+    B --> C{Service Layer}
+    C --> D[Database Interaction]
+`}
+</Diagram>

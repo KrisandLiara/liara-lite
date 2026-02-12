@@ -1,0 +1,48 @@
+# Database Development Workflow
+
+This document outlines the standard procedure for making changes to the database schema. Following this workflow is crucial for ensuring consistency between local and production environments.
+
+The `/supabase/migrations` directory is the **single source of truth** for the database schema. Direct changes via the Supabase Studio are discouraged in production.
+
+## The Migration Workflow
+
+<Diagram>
+{`
+graph TD
+    A[Start: Need Schema Change] --> B(1. Create Migration);
+    B -- "supabase migration new <name>" --> C[2. Edit the new .sql file in<br/>/supabase/migrations];
+    C --> D(3. Apply & Test Locally);
+    D -- "supabase db reset" --> E{Is the change working?};
+    E -- Yes --> F(4. Update Schema Dump);
+    F -- "supabase db dump -f docs/system/current_schema.sql" --> G[5. Commit new migration file &<br/>updated schema dump to Git];
+    G --> H[End: Ready for Production Deploy];
+    E -- No --> C;
+
+    classDef command fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff;
+    class B,D,F command;
+`}
+</Diagram>
+
+### Key Steps & Commands:
+
+1.  **Create a New Migration:** For any schema change (a new table, an altered function), you must first create a migration file.
+    ```bash
+    supabase migration new <a_descriptive_name_for_your_change>
+    ```
+
+2.  **Edit the Migration File:** Open the newly generated SQL file in the `supabase/migrations` directory and write the SQL statements for your change.
+
+3.  **Apply and Test Locally:** To apply the new migration to your local database, the cleanest method is to reset it. This wipes the local database and rebuilds it by applying all migrations in order.
+    ```bash
+    supabase db reset
+    ```
+
+4.  **Update the Schema Dump:** Once your changes are working correctly, generate a complete dump of the updated schema. This file is used to power parts of this documentation site.
+    ```bash
+    supabase db dump --schema-only --file docs/system/current_schema.sql
+    ```
+    This updated schema can be viewed on the <Keyword to="/app/system-overview/database/full-schema">Full Schema Dump</Keyword> page.
+
+5.  **Commit:** Add the new migration file and the updated `current_schema.sql` to your Git commit. This keeps the schema definition in sync with the application code.
+
+This process guarantees that our database schema is version-controlled, reproducible, and well-documented. 

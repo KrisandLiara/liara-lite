@@ -1,0 +1,63 @@
+# Database Overview
+
+The database is the foundation of Liara's persistence layer, responsible for storing all user data, conversation histories, and the AI's long-term memories.
+
+## Technology Stack
+
+We use **Supabase** as our backend-as-a-service provider, which gives us a powerful, managed **PostgreSQL** database. This comes with several advantages:
+
+-   **Managed Infrastructure**: Supabase handles the hosting, scaling, and maintenance of the database.
+-   **PostgreSQL**: We have access to the full power of a relational database, including complex queries, transactions, and extensions like `pg_vector`.
+-   **Row-Level Security (RLS)**: RLS is a key feature we use to enforce data privacy and ensure users can only access their own data.
+-   **Authentication**: Supabase provides a built-in authentication system that integrates seamlessly with our database and RLS policies.
+
+<Diagram>
+{`
+graph TD
+    subgraph "Application"
+        A[Frontend]
+        B[Backend API]
+    end
+    
+    subgraph "Supabase"
+        C(PostgreSQL Database)
+        D(Authentication)
+        E(Storage)
+        F(Edge Functions)
+    end
+    
+    A -- "Interacts with" --> B
+    B -- "Uses" --> C
+    B -- "Verifies with" --> D
+    A -- "Can directly access with RLS" --> C
+`}
+</Diagram>
+
+## Key Documentation Pages
+
+<CardGrid>
+    <Card title="Schema Diagram & Tables" icon="Database">
+        A high-level look at the core tables and their relationships, with detailed descriptions of each table's columns and purpose.
+        [Explore Schema](/app/system-overview/database/01-schema-and-tables)
+    </Card>
+    <Card title="SQL Functions" icon="FunctionSquare">
+        Detailed documentation on the custom SQL functions used for complex queries and data manipulation.
+        [Explore Functions](/app/system-overview/database/02-sql-functions)
+    </Card>
+    <Card title="RLS & Policies" icon="ShieldCheck">
+        Explains our data security model and how Row-Level Security is configured to protect user data.
+        [View Policies](/app/system-overview/database/rls-policies)
+    </Card>
+    <Card title="Migration History" icon="History">
+        A log of all historical database schema changes, managed by Supabase migrations.
+        [See History](/app/system-overview/database/migration-history)
+    </Card>
+    <Card title="Full Schema Dump" icon="FileText">
+        A complete, browseable SQL dump of the current database schema for detailed analysis.
+        [View Schema](/app/system-overview/database/full-schema)
+    </Card>
+</CardGrid>
+
+## SQL Function Definitions
+
+The `/database/functions` directory in the project root contains the raw SQL definitions for all custom database functions. These are the same functions you can explore in the <Keyword to="/app/system-overview/database/02-sql-functions">SQL Functions</Keyword> section. Keeping them in the repository allows for version control and easy reference during development. 

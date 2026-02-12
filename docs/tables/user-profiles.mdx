@@ -1,0 +1,27 @@
+# `user_profiles`
+
+This table stores public information about your users.
+
+The `user_profiles` table holds application-specific information about a user, extending the default `auth.users` table provided by Supabase.
+
+## Purpose
+
+Supabase's built-in `auth.users` table contains essential authentication information like email and password hashes, but it's not recommended to add custom application data directly to it. The `user_profiles` table serves as a dedicated, linked location for this custom data.
+
+This table is linked one-to-one with `auth.users`, using the same `id` as both its primary key and foreign key. This is a common and recommended pattern for Supabase projects.
+
+## Column Breakdown
+
+| Column           | Type          | Description                                                                                               |
+|------------------|---------------|-----------------------------------------------------------------------------------------------------------|
+| `id` (PK, FK)    | `uuid`        | The primary key for this table. Crucially, it is also a foreign key that references `auth.users.id`.        |
+| `username`       | `text`        | The user's chosen display name within the application.                                                    |
+| `full_name`      | `text`        | The user's full name.                                                                                     |
+| `avatar_url`     | `text`        | A URL pointing to the user's chosen profile picture.                                                      |
+| `app_metadata`   | `jsonb`       | A flexible JSON column for storing application settings, like the selected theme or personality preferences. |
+| `created_at`     | `timestamptz` | Timestamp for when the profile was created.                                                               |
+
+## Key Features
+
+- **Row Level Security (RLS)**: This table has RLS policies enabled. A user can only select or update their own profile record. This is enforced by a policy that checks `auth.uid() = id`.
+- **Automatic Profile Creation**: A database trigger (`on_user_created`) is typically used to automatically create a new row in `user_profiles` whenever a new user signs up and is added to `auth.users`. 

@@ -1,0 +1,28 @@
+# Backend: Node.js Server Overview
+
+The backend is a standard Node.js server using the Express framework. It centralizes API handling, business logic, authentication, and database access.
+
+## Responsibilities
+
+- API routing and request handling
+- Authentication and authorization via middleware
+- Orchestration of chat, memory, and enrichment flows
+- Database access through a service layer (Supabase client)
+- Integrations with external AI services
+
+<Diagram>
+{`
+flowchart LR
+  A[Frontend] -->|REST /api| B(Express Routes)
+  B --> C{Controllers}
+  C --> D[Services]
+  D --> E[(Supabase / Postgres)]
+  D --> F[(OpenAI / LLM)]
+`}
+</Diagram>
+
+## See also
+
+- <Keyword to="/app/system-overview/backend/02-api-endpoints">API Endpoints</Keyword>
+- <Keyword to="/app/system-overview/middleware-auth">Middleware & Auth</Keyword>
+- <Keyword to="/app/system-overview/edge-functions">Edge Functions</Keyword>

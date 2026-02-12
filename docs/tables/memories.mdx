@@ -1,0 +1,39 @@
+# Table: `memories`
+
+This is one of the most critical tables in the application. It stores the semantic memories that Liara uses for long-term recall.
+
+The `memories` table is the heart of Liara's intelligence. It stores discrete, semantic pieces of information extracted from conversations, allowing for powerful, context-aware recall. Unlike `chat_history`, which is a raw log, `memories` stores processed and enriched data.
+
+## Purpose
+
+The purpose of this table is to create a searchable, long-term knowledge base for each user. When the system needs to recall relevant information, it performs a semantic search against the `embedding` column in this table. This allows Liara to find memories that are conceptually related to the current conversation, even if they don't share exact keywords.
+
+## Column Breakdown
+
+| Column           | Type          | Description                                                                                             |
+|------------------|---------------|---------------------------------------------------------------------------------------------------------|
+| `id` (PK)        | `uuid`        | The unique identifier for this memory entry.                                                            |
+| `user_id` (FK)   | `uuid`        | A foreign key that links the memory to the user who owns it.                                            |
+| `content`        | `text`        | The core text of the memory itself. This is the data that gets embedded.                                 |
+| `embedding` (Index)| `vector(1536)`| A 1536-dimension vector representing the semantic meaning of the `content`. This is the key to semantic search and is indexed using `pgvector` for performance. |
+| `importance`     | `real`        | A score from 0 to 1 indicating the importance of the memory, which can be used to rank search results.  |
+| `source`         | `text`        | Indicates where the memory came from (e.g., `conversation_summary`, `manual`).                            |
+| `metadata`       | `jsonb`       | A flexible column for storing any additional structured data, such as the `chat_session_id` it was derived from. |
+| `tags`           | `text[]`      | An array of keywords or tags associated with the memory for filtering.                                  |
+| `summary`        | `text`        | If the memory is a summary of a longer conversation, the summary is stored here.                          |
+| `topic`          | `text`        | The primary topic of the memory.                                                                        |
+| `sentiment`      | `text`        | The emotional tone of the content (e.g., "positive", "neutral").                                        |
+| `source_type`    | `text`        | The specific kind of source, providing more detail than the `source` column.                              |
+| `pinned`         | `boolean`     | If `true`, this memory might be prioritized or prevented from being deleted.                            |
+| `source_chat_id` | `uuid`        | If the memory originated from a chat, this links to the specific `chat_history` message ID.               |
+| `message_id`     | `uuid`        | A more generic reference to a source message ID.                                                        |
+| `parent_id`      | `uuid`        | Can be used to create hierarchical relationships between memories.                                      |
+| `related_to`     | `uuid`        | A generic UUID for linking to other related items.                                                      |
+| `created_at`     | `timestamptz` | Timestamp for when the memory was created.                                                              |
+| `updated_at`     | `timestamptz` | Timestamp for when the memory was last updated.                                                         |
+
+## Key Features
+
+- **Semantic Search**: The `embedding` column, combined with the `search_memories` RPC function and the `pgvector` extension, enables the powerful <Keyword to="/app/system-overviw/data-flow/semantic-recall-flow">Semantic Recall Flow</Keyword>.
+- **Data Enrichment**: This table stores data that has been processed and enriched by the AI (e.g., summaries, topics, importance scores), making it more valuable than the raw chat log.
+- **Relational Memory**: Using the <Keyword to="/app/system-overview/tables/memory-relationships">`memory_relationships`</Keyword> table, memories can be linked together to form a complex graph of knowledge. 

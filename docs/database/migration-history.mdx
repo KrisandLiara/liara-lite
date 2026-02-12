@@ -1,0 +1,16 @@
+# Migration History
+> Vertical timeline of migration files + notes about what changed.
+
+<Diagram>
+{`
+graph TD
+    subgraph "Database Migrations"
+        A["20240801_initial_schema.sql <br/> - Base tables for users, memories, chat"] --> B["20240803_add_tags_to_memories.sql <br/> - Adds text[] column to memories table"]
+        B --> C["20240805_update_rls_policies.sql <br/> - Refines security policies for chat"]
+    end
+`}
+</Diagram>
+
+This page is intended to provide a high-level, chronological overview of significant changes to the database schema. The actual migration files, which serve as the ultimate source of truth, are located in the `supabase/migrations` directory in the repository.
+
+-data coming- 

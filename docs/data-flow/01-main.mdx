@@ -1,0 +1,72 @@
+# Data Flow
+
+This page documents the primary data flows within the Liara application. Understanding these sequences is crucial for debugging and extending the system's functionality.
+
+---
+
+## 1. End-to-End Chat Flow
+
+This flow describes what happens when a user sends a message in the chat interface.
+
+<Diagram>{`
+sequenceDiagram
+    participant User as User's Browser (React)
+    participant Backend as Node.js Backend
+    participant OpenAI
+    participant DB as Supabase DB
+
+    User->>Backend: POST /api/chat (message, session_id?)
+    Backend->>DB: Save user message to 'chat_messages'
+    alt Long-Term Memory is Enabled
+        Backend->>OpenAI: Generate embedding for message
+        OpenAI-->>Backend: Embedding vector
+        Backend->>DB: Save new entry to 'memories' table
+    end
+    Backend->>OpenAI: Send conversation history for chat response
+    OpenAI-->>Backend: Streaming LLM Response
+    Backend->>User: Stream response back to UI
+    Backend->>DB: Save assistant message to 'chat_messages'
+`}</Diagram>
+
+**User Input**: The user types a message in the <Keyword to="/app/system-overview/modules/chat-system">Chat Interface</Keyword> and hits send.
+
+**API Request**: The frontend sends the message content and the current `session_id` to the `POST /api/chat` endpoint on our <Keyword to="/app/system-overview/backend/server-overview">Node.js Backend</Keyword>.
+
+**Persistence**: The backend immediately saves the user's message to the `chat_messages` table in the <Keyword to="/app/system-overview/database/01-schema-and-tables">database</Keyword>.
+
+**Memory Creation (Optional)**: If long-term memory is enabled, the backend sends the message content to the OpenAI API to generate a vector embedding. This embedding, along with the message content and metadata, is saved as a new entry in the `memories` table.
+
+**LLM Call**: The backend sends the full conversation history to the OpenAI API to generate a contextual response.
+
+**Streaming & Saving**: The backend streams the AI's response back to the frontend for a real-time effect. Simultaneously, once the full response is received, it's saved to the `chat_messages` table as the assistant's turn.
+
+---
+
+## 2. Memory Search Flow
+
+This flow describes what happens when a user performs a semantic search on the Memory Page.
+
+<Diagram>{`
+sequenceDiagram
+    participant User as User's Browser (React)
+    participant Backend as Node.js Backend
+    participant OpenAI
+    participant DB as Supabase DB
+
+    User->>Backend: POST /api/memories/search (query)
+    Backend->>OpenAI: Generate embedding for search query
+    OpenAI-->>Backend: Embedding vector
+    Backend->>DB: Call 'search_memories' RPC with vector
+    DB-->>Backend: Return top matching memories
+    Backend-->>User: Send memory results to UI
+`}</Diagram>
+
+**Search Request**: The user types a query into the search bar on the <Keyword to="/app/system-overview/roadmap/01-smart-tag-view">Memory Page</Keyword>.
+
+**API Request**: The frontend sends the query to the `POST /api/memories/search` endpoint.
+
+**Query Embedding**: The backend sends the user's search query to OpenAI to generate a vector embedding.
+
+**Vector Search**: The backend calls the `search_memories` <Keyword to="/app/system-overview/database/02-sql-functions">database function</Keyword>, passing in the new query embedding. This function performs a vector similarity search against all entries in the `memories` table.
+
+**Return Results**: The database returns the most closely related memories, which the backend then forwards to the frontend to be displayed as search results. 

@@ -1,0 +1,24 @@
+# Table: `hard_memory_entries`
+
+This table is part of the experimental "Hard Memory" system.
+
+The `hard_memory_entries` table is a specialized data store for explicit, factual information that should be treated as undeniable truth by the AI.
+
+## Purpose
+
+While the <Keyword to="/app/system-overview/tables/memories">`memories`</Keyword> table stores nuanced, semantic information, this table is for things that are not open to interpretation. For example: "The user's birthday is January 1st."
+
+This provides a mechanism to programmatically insert foundational knowledge into Liara's memory, which can be used to ground her responses and prevent factual errors. This system is still under development and is not yet fully integrated into the chat flow.
+
+## Column Breakdown
+
+| Column           | Type          | Description                                                                 |
+|------------------|---------------|-----------------------------------------------------------------------------|
+| `id` (PK)        | `uuid`        | The unique identifier for this hard memory entry.                           |
+| `user_id` (FK)   | `uuid`        | A foreign key that links the memory to the user who owns it.                  |
+| `fact`           | `text`        | The core statement of fact (e.g., "My favorite color is blue").             |
+| `topic`          | `text`        | A general category for the fact.                                            |
+| `keywords`       | `text[]`      | An array of keywords for simple, non-semantic filtering.                    |
+| `importance`     | `real`        | A score from 0 to 1 indicating the importance of this fact.                 |
+| `pinned`         | `boolean`     | If true, this fact may be given higher priority in retrieval.               |
+| `created_at`     | `timestamptz` | Timestamp for when the fact was recorded.                                   | 

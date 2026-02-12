@@ -1,0 +1,39 @@
+# Chat Module Overview
+
+The Chat Module is the heart of the Liara application, facilitating real-time, stateful conversations between the user and the AI. This section provides an overview of its core components and logic.
+
+## Conversation Management
+
+Conversations are the primary organizational unit for user interactions. The UI displays a list of past conversations, allowing the user to resume a previous discussion at any time.
+
+### Database Schema for Chat
+
+The chat system relies on two primary tables in the <Keyword to="/app/system-overview/database/01-schema-and-tables">database</Keyword> to persist conversation data:
+
+1.  **`conversations`**: This table stores metadata for each distinct conversation thread, such as its title and the associated user.
+2.  **`chat_history`**: This table stores every individual message (both from the user and the AI) and links it to a specific conversation.
+
+<Diagram>
+{`
+graph TD
+    subgraph "Database Tables"
+        A["conversations Table<br/>(id, user_id, title)"]
+        B["chat_history Table<br/>(id, conversation_id, content, role)"]
+    end
+
+    A -- "One-to-Many" --> B
+
+    style A fill:#2e86c1,stroke:#fff,stroke-width:2px,color:#fff
+    style B fill:#2e86c1,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+When a user starts a new chat, a new entry is created in the `conversations` table. Every subsequent message in that chat is then saved as a new entry in the `chat_history` table, linked by the `conversation_id`.
+
+## Core Logic
+
+The two most important processes in the chat module are the conversation flow and context management.
+
+-   **Conversation Flow:** This is the end-to-end sequence of events that occurs when a user sends a message. It covers the journey from the frontend to the backend, AI, and back. For a detailed breakdown, see the <Keyword to="/app/system-overview/modules/chat-module/conversation-flow">Conversation Flow</Keyword> page.
+
+-   **Context Management:** To have a meaningful conversation, the AI needs context. This is the process of selecting the most relevant information—recent messages, long-term memories, and personality traits—to fit within the AI's limited context window. Learn more on the <Keyword to="/app/system-overview/modules/chat-module/context-management">Context Management</Keyword> page. 

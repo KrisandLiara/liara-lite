@@ -1,0 +1,55 @@
+---
+title: System Component Diagram
+description: A high-level overview of the major components in the Liara system and their interactions.
+---
+
+import { DiagramSpoiler } from '@/components/system-overview/DiagramSpoiler';
+
+## Component Diagram (C4 Model - Level 2)
+
+This diagram shows the main containers (applications and data stores) that make up the Liara system. It illustrates the high-level technical choices and how the core parts of the system interact with each other and with external services.
+
+<DiagramSpoiler>
+```mermaid
+C4Component
+    title Component Diagram for Liara System
+
+    Container_Boundary(c1, "Liara Web Application") {
+        Component(spa, "Single-Page App", "Vite/React, TypeScript", "The user-facing web application providing the chat, memory, and system management interfaces.")
+        Component(web, "Web Server", "Node.js, Express", "Handles API requests, serves the SPA, and orchestrates backend services.")
+    }
+
+    System_Boundary(c2, "Supabase") {
+        ContainerDb(db, "PostgreSQL Database", "Stores user data, memories, conversations, and application state.")
+        Container(auth, "Authentication", "Handles user sign-up, sign-in, and session management using JWT.")
+        Container(functions, "Edge Functions", "Serverless functions for specific backend tasks, e.g., AI enrichment, database queries.")
+    }
+
+    System_Ext(openai, "OpenAI API", "Provides language models for chat completion, summarization, tagging, and generating embeddings.")
+
+    Rel(spa, web, "Makes API calls to", "HTTPS/JSON")
+    Rel(web, db, "Reads from and writes to", "SQL")
+    Rel(web, functions, "Invokes", "HTTPS")
+    Rel(web, openai, "Sends requests to", "HTTPS/JSON")
+
+    Rel_Back(spa, auth, "Authenticates users with", "JWT")
+    Rel(web, auth, "Validates user sessions with", "JWT")
+
+    UpdateElementStyle(spa, $bgColor="blue", $fontColor="white")
+    UpdateElementStyle(web, $bgColor="darkblue", $fontColor="white")
+    UpdateElementStyle(db, $bgColor="green", $fontColor="white")
+    UpdateElementStyle(auth, $bgColor="orange", $fontColor="black")
+    UpdateElementStyle(functions, $bgColor="purple", $fontColor="white")
+    UpdateElementStyle(openai, $bgColor="gray", $fontColor="white")
+```
+</DiagramSpoiler>
+
+### Key Components:
+
+-   **Single-Page App (SPA):** The frontend application built with React and Vite. This is what the user interacts with directly in their browser. It's responsible for rendering the UI, managing local state, and communicating with the backend web server.
+-   **Web Server:** A backend server built with Node.js and Express. It serves the SPA, provides a RESTful API for the frontend, and acts as a central hub for backend logic.
+-   **Supabase (PostgreSQL Database):** The primary data store for the application. It holds all persistent data, including user profiles, memories, and chat histories.
+-   **Supabase (Authentication):** The service that manages user identity. It handles everything from signing up and logging in to managing user sessions.
+-   **Supabase (Edge Functions):** These are serverless functions used for specific, often intensive, tasks. For example, an edge function might be responsible for calling the OpenAI API to enrich a conversation, keeping that logic separate from the main web server.
+-   **OpenAI API:** An external, third-party service that provides the core AI capabilities for Liara, including natural language understanding, text generation, and creating vector embeddings.
+

@@ -1,0 +1,259 @@
+/* Import Page Custom Styles */
+.import-page-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: start;
+}
+
+/* New 4-step layout */
+.import-page-grid-4step {
+  display: grid;
+  grid-template-columns: 1fr 300px 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: start;
+}
+
+.import-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.import-center-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.import-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+/* Step 1 - Simple Flex Layout */
+.step1-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+}
+
+.step1-top-row {
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.step1-file-area {
+  flex: 1;
+}
+
+.step1-button-area {
+  width: 120px;
+  display: flex;
+  align-items: stretch;
+}
+
+.step1-bottom-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.step1-checkbox-area {
+  flex: 1;
+}
+
+.step1-retry-area {
+  flex: 1;
+}
+
+/* Step 2 - Enrich Data */
+.step2-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+}
+
+/* Step 3 is compact - positioned at bottom */
+.step3-compact {
+  min-height: 80px;
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+/* Step 3 - Load to Database */
+.step3-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+}
+
+.step3-top-row {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.step3-file-area {
+  width: 160px;
+}
+
+.step3-buttons-area {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.step3-buttons-area button {
+  flex: 1;
+}
+
+.step3-clear-area {
+  margin-top: 2px;
+}
+
+/* Compact cards */
+.compact-card {
+  padding: 6px;
+  border-radius: 6px;
+  background: rgb(30, 41, 59);
+  border: 1px solid rgb(51, 65, 85);
+}
+
+/* Thinner progress bar */
+.thin-progress-bar {
+  height: 2px;
+  background: rgb(51, 65, 85);
+  border-radius: 1px;
+  margin: 4px 0 8px 0;
+  position: relative;
+}
+
+.thin-progress-bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #06b6d4, #3b82f6);
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+.thin-progress-bar[data-step="1"]::after { width: 33%; }
+.thin-progress-bar[data-step="2"]::after { width: 66%; }
+.thin-progress-bar[data-step="3"]::after { width: 100%; }
+
+.compact-card-header {
+  margin-bottom: 6px;
+}
+
+.compact-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(248, 250, 252);
+  margin: 0;
+}
+
+.compact-card-description {
+  font-size: 11px;
+  color: rgb(148, 163, 184);
+  margin: 2px 0 0 0;
+}
+
+/* Compact form elements */
+.compact-button {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.compact-button-small {
+  height: 24px;
+  padding: 0 8px;
+  font-size: 10px;
+  border-radius: 3px;
+}
+
+/* Button heights to match corresponding elements */
+.step1-button-area .compact-button {
+  height: auto !important; /* Let it stretch to match file upload area */
+  flex: 1;
+}
+
+.step2-button-area .compact-button-small {
+  height: 42px !important; /* Match preset area total height (16px label + 24px buttons + 2px gap) */
+}
+
+.compact-select {
+  height: 28px;
+  font-size: 12px;
+}
+
+.compact-checkbox {
+  font-size: 11px;
+}
+
+.compact-label {
+  font-size: 11px;
+  color: rgb(148, 163, 184);
+}
+
+/* File upload area */
+.compact-file-upload {
+  border: 2px dashed rgb(51, 65, 85);
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+  background: rgb(15, 23, 42);
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Quick presets compact */
+.step2-presets-area {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step2-presets-area .compact-label {
+  font-size: 11px;
+  color: rgb(148, 163, 184);
+  margin-bottom: 2px;
+}
+
+.compact-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px;
+}
+
+.compact-preset-btn {
+  height: 24px;
+  padding: 2px;
+  font-size: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.compact-preset-btn svg {
+  width: 8px;
+  height: 8px;
+  margin-bottom: 1px;
+} 

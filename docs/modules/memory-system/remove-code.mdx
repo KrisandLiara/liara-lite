@@ -1,0 +1,53 @@
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { CodeBlock } from '@/components/system-overview/CodeBlock'
+
+# Code Block Removal Logic
+
+This page details how code blocks are handled during the ChatGPT import process. The removal logic differs between the frontend **preview** and the backend **enrichment** stages to serve different purposes.
+
+### Frontend Preprocessing (For Preview)
+
+In the **Data Preview & Preprocessing** interface, when the "Remove Code" checkbox is ticked, a client-side function is applied to the conversations loaded in the browser.
+
+- **Purpose**: To provide a clean, readable preview of the conversational text without large, distracting code blocks.
+- **Method**: It uses a regular expression to find any text enclosed in triple backticks (\\`\\`\\`) and replaces the entire block with the placeholder string: `[Code Block Removed]`.
+- **File**: `src/lib/import/preprocessor.ts`
+
+```typescript
+function removeCodeBlocks(content) {
+  return content.replace(/```[\\s\\S]*?```/g, '[Code Block Removed]');
+}
+```
+
+<Alert>
+  <AlertTitle>Important Distinction</AlertTitle>
+  <AlertDescription>
+    This frontend removal is for **display purposes only**. It affects what you see in the preview but does not alter the data that is sent to the backend for the actual enrichment and embedding process.
+  </AlertDescription>
+</Alert>
+
+### Backend Enrichment (For Embedding)
+
+When you proceed to "Step 2: Enrich Data", the original, unaltered conversation data (including full code blocks) is sent to the backend. The backend has a separate preprocessing step that runs *before* sending text to OpenAI for embedding.
+
+- **Purpose**: To reduce the token count and cost of embeddings, and to prevent the model from embedding non-semantic code.
+- **Method**: It uses a similar regex but replaces the code block with a more descriptive placeholder tag, preserving the language if specified (e.g., `[codeblock:javascript]`). This tag is then embedded along with the rest of the text.
+- **File**: `liara-backend/src/import/enricher.js`
+
+```javascript
+async function preprocessForEmbedding(content) {
+  let processedContent = content;
+  const codeBlockRegex = /```(\\w+)?\\n([\\s\\S]*?)```/g;
+  let match;
+  let codeBlocksReplaced = 0;
+
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    const language = match[1] || 'code';
+    processedContent = processedContent.replace(match[0], `[codeblock:\${language}]`);
+    codeBlocksReplaced++;
+  }
+  // ...
+  return { processedContent, truncated, shouldSkip, codeBlocksReplaced };
+}
+```
+This two-step process ensures both a clean user interface for previewing and an efficient, cost-effective method for data enrichment. 

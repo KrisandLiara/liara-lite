@@ -1,0 +1,55 @@
+# System Architecture Overview
+
+This document provides a high-level overview of the Liara application's architecture. It outlines the primary components, their responsibilities, and how they interact to create a seamless, intelligent conversational experience.
+
+The system is logically divided into three primary layers: a dynamic <Keyword to="/app/system-overview/architecture/frontend">Frontend</Keyword>, a powerful <Keyword to="/app/system-overview/architecture/backend">Backend</Keyword>, and a flexible <Keyword to="/app/system-overview/architecture/database">Supabase Database</Keyword>.
+
+<Diagram caption="A high-level diagram illustrating the four main components of the Liara application architecture. The user interacts with the Frontend, which communicates with the Backend. The Backend, in turn, interfaces with the Database and external AI services.">
+{`
+graph TD;
+    A["<b>User</b><br/>(via Browser)"] --> B{"<b>Frontend</b><br/>(React/Vite)"};
+    B --> C{"<b>Backend</b><br/>(Node.js/Express)"};
+    C --> D{"<b>Database</b><br/>(Supabase/PostgreSQL)"};
+    C --> E{"<b>AI Services</b><br/>(OpenAI)"};
+    
+    subgraph "User Interface"
+        B
+    end
+
+    subgraph "Server-Side Logic"
+        C
+    end
+    
+    subgraph "Data & AI"
+        D
+        E
+    end
+
+    style B fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff
+    style C fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style D fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+    style E fill:#17202A,stroke:#9B59B6,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+## Core Components
+
+- **<Keyword to="/app/system-overview/architecture/frontend">Frontend</Keyword>**: Built with <Keyword>React</Keyword> and <Keyword>Vite</Keyword>, this is the user-facing application. It handles user interactions, displays conversations, and communicates with the backend via a REST API. It's designed to be fast, responsive, and intuitive.
+
+- **<Keyword to="/app/system-overview/architecture/backend">Backend</Keyword>**: A <Keyword>Node.js</Keyword> server using the <Keyword>Express</Keyword> framework. This is the brain of the operation, responsible for handling business logic, managing user authentication, processing chat messages, and interfacing with the database and external AI services.
+
+- **<Keyword to="/app/system-overview/architecture/database">Database</Keyword>**: We use <Keyword>Supabase</Keyword>, which provides a <Keyword>PostgreSQL</Keyword> database, authentication, and storage. It persists all application data, including user profiles, chat sessions, and the crucial long-term memory system.
+
+- **AI Services**: External services, primarily <Keyword>OpenAI</Keyword>, are used for generating chat responses, creating embeddings for semantic search, and other AI-powered features.
+
+## High-Level Interaction Flow
+
+A typical interaction, like a user sending a message, follows this path:
+1. The **Frontend** captures the user's message and sends it to a specific endpoint on the **Backend**.
+2. The **Backend** receives the request, authenticates the user, and performs initial processing.
+3. It then queries the **Database** to retrieve relevant memories and context for the ongoing conversation.
+4. This information is packaged and sent to an **AI Service** (e.g., OpenAI) to generate an intelligent response.
+5. The **Backend** receives the response, saves the new turn in the conversation to the **Database**, and sends the final message back to the **Frontend**.
+6. The **Frontend** displays the new message to the user.
+
+This high-level overview should give you a solid foundation. Please use the sidebar to dive deeper into each component.

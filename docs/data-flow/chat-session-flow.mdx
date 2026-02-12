@@ -1,0 +1,79 @@
+# Chat Session Flow
+
+This document describes the data flow for chat sessions.
+
+This flow details the sequence of events that occurs when a user sends a message in the chat interface. It involves optimistic UI updates to feel responsive, multiple backend calls to persist data, and an external call to an AI service to generate a response.
+
+<Diagram>{`
+sequenceDiagram
+    actor User
+    participant Frontend as React UI
+    participant Backend as Express API
+    participant Database as Supabase DB
+    participant AI as OpenAI
+
+    User->>Frontend: Types and sends a new message.
+    activate Frontend
+
+    note right of Frontend: 1. Optimistic Update<br/>Immediately displays user's message.
+    
+    Frontend->>Backend: 2. Save User Message<br/>POST /api/save-memory
+    activate Backend
+
+    Backend->>Database: INSERT into chat_history
+    activate Database
+    Database-->>Backend: Return saved message with ID
+    deactivate Database
+
+    alt New Conversation
+        Backend-->>Frontend: Return new conversation ID
+    else Existing Conversation
+        Backend-->>Frontend: Confirm message saved
+    end
+    deactivate Backend
+
+    Frontend->>AI: 3. Get AI Response<br/>Invoke 'chat-with-liara' Edge Function
+    activate AI
+
+    note over AI, Database: Fetch context
+    AI->>Database: Fetch conversation history & personality
+    Database-->>AI: Return relevant context
+    
+    note over AI: Formulate prompt
+    AI-->>Frontend: Stream AI response
+    deactivate AI
+
+    Frontend->>Backend: 4. Save AI Message<br/>POST /api/save-memory
+    activate Backend
+    
+    Backend->>Database: INSERT into chat_history
+    activate Database
+    Database-->>Backend: Confirm message saved
+    deactivate Database
+    deactivate Backend
+    
+    note right of Frontend: 5. Final UI Update<br/>Displays the fully saved AI response.
+    
+    Frontend->>User: Show final AI response.
+    deactivate Frontend
+`}</Diagram>
+
+## Step-by-Step Breakdown
+
+1.  **Optimistic UI Update**: As soon as the user hits "send", the <Keyword to="/app/system-overview/architecture/frontend">Frontend</Keyword> immediately adds the user's message to the chat window. This makes the application feel instantaneous. The message is marked with a temporary client-side ID.
+
+2.  **Save User Message**: The frontend sends the user's message to the `/api/save-memory` endpoint on the <Keyword to="/app/system-overview/architecture/backend">Backend</Keyword>.
+    - If it's a new chat, the backend first creates a new entry in the `chat_sessions` table.
+    - It then saves the user's message to the `chat_history` table, linking it to the session.
+    - The backend returns the permanent database ID for the message (and the new session ID, if applicable). The frontend then updates the optimistic message with its real ID.
+
+3.  **Get AI Response**: The frontend invokes the `chat-with-liara` <Keyword>Supabase Edge Function</Keyword>.
+    - This function retrieves the recent conversation history and any relevant personality traits from the <Keyword to="/app/system-overview/architecture/database">Database</Keyword>.
+    - It constructs a detailed prompt and sends it to the <Keyword>OpenAI</Keyword> API.
+    - The AI's response is streamed back directly to the frontend for a real-time "typing" effect.
+
+4.  **Save AI Message**: Once the full response is received from the AI, the frontend sends it to the same `/api/save-memory` endpoint to be persisted in the `chat_history` table.
+
+5.  **Final UI Update**: The AI's message, now with a permanent ID from the database, is updated in the UI.
+
+This entire process ensures the chat feels fast for the user while maintaining data integrity and enabling the AI to have contextually relevant conversations. 

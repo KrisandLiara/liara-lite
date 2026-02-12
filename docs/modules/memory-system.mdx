@@ -1,0 +1,106 @@
+# Core Module: Memory System
+
+The Memory System is the core of Liara's long-term knowledge capabilities. It enables the application to perform intelligent, multi-stage searches over past conversations and is the foundation for features like the Tag Explorer and the Smart Tag View.
+
+## UI Flow & Component Architecture
+
+The user journey through the memory system is designed to be intuitive, moving from a high-level overview to specific, detailed memories in a controlled manner.
+
+1.  **Memory Overview**: The entry point at `/app/memory/all` is the `<AllMemoriesView/>`, which serves as a placeholder dashboard for future system-wide statistics and visualizations.
+2.  **Tag Cloud**: The journey begins at `/app/memory/tags` in the `<TagCloudView/>`. This component fetches all unique user tags, weighting them by frequency to provide a visual map of common topics.
+3.  **Initial Memory List (Tag Search)**: Clicking a tag (e.g., "Car") navigates to `/app/memory/tags/Car`. This renders the `<MemoriesByTagView/>`, which immediately fetches and displays **only** memories with an exact match for that tag.
+4.  **Search Expansion (Keyword & Semantic)**: The `<MemoriesByTagView/>` provides `Keyword` and `Semantic` buttons. Clicking these triggers new searches, allowing the user to progressively broaden the scope from the initial exact-match results.
+5.  **Memory Detail**: Clicking on any `<SmallMemoryCard/>` in the list opens the `<MemoryDetail/>` dialog, which now receives the search context (like the keyword) to provide features like highlighting.
+
+## Data Flow: Simplified Conversation Loading
+
+The system has been refactored to use a much simpler and more robust data loading strategy. The complex, multi-stage search flow has been replaced by a single, direct database function call, which greatly improves performance and reduces frontend complexity.
+
+<Diagram>{`
+sequenceDiagram
+    participant User
+    participant "RecentConversationsList.tsx" as Frontend
+    participant "Supabase" as Supabase
+
+    User->>Frontend: Loads Chat Page
+    activate Frontend
+    Frontend->>Supabase: RPC Call: get_recent_chat_sessions_for_user()
+    activate Supabase
+    Supabase->>Supabase: Fetches conversations for the current user
+    Supabase-->>Frontend: Returns list of recent conversations
+    deactivate Supabase
+    Frontend->>Frontend: Renders conversation list
+    
+    User->>Frontend: Clicks on a conversation
+    Frontend->>Frontend: Calls loadConversation(id) from MemoryContext
+    deactivate Frontend
+`}</Diagram>
+
+This new flow is defined by a single RPC call:
+
+1.  **`get_recent_chat_sessions_for_user()`**: A simple and efficient PostgreSQL function that directly returns the 20 most recent chat sessions for the authenticated user. All complex search and filtering logic has been removed from the initial view, ensuring the list loads quickly and reliably.
+
+This change was part of a major stabilization effort that eliminated numerous bugs related to data fetching and state management.
+
+## Architecture: Dual Memory Types
+
+The system is designed to seamlessly integrate two distinct types of memories, each with its own vectorization strategy:
+
+1.  **Bulk-Imported Memories**: These originate from external sources, like a ChatGPT conversation history export.
+    *   **Unit**: Each row in the `memories` table represents a *single line or entry* from the import.
+    *   **Vector Source**: The embedding is generated directly from the content of that single line. This provides a granular, line-by-line semantic index.
+
+2.  **Live Memories (New Chats)**: These are created dynamically from conversations that happen within Liara.
+    *   **Unit**: Each row in the `memories` table represents an *entire conversation*. The full transcript is stored for reference.
+    *   **Vector Source**: The embedding is generated from a high-quality, AI-generated **topic and summary** of the conversation. This creates a potent, semantically-dense vector that captures the core meaning of the discussion.
+
+<Diagram>{`
+graph TD;
+    subgraph "Memory Sources"
+        A["ChatGPT Export"]
+        B["Live Chat in App"]
+    end
+
+    subgraph "Vectorization Process"
+        C["Line-by-Line Embedding"]
+        D["AI Topic/Summary<br/>then Embedding"]
+    end
+    
+    subgraph "Database"
+        E["memories Table<br/>(One row per line)"]
+        F["memories Table<br/>(One row per conversation)"]
+    end
+
+    A --> C --> E;
+    B --> D --> F;
+    
+    E --> G{Hybrid Search};
+    F --> G{Hybrid Search};
+
+    style A fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+    style B fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+    style C fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style D fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style E fill:#28B463,stroke:#fff,stroke-width:1.5px,color:#fff
+    style F fill:#2E86C1,stroke:#fff,stroke-width:1.5px,color:#fff
+    style G fill:#9B59B6,stroke:#fff,stroke-width:2px,color:#fff
+`}</Diagram>
+
+### Data Structures & Backend Logic
+
+-   **<Keyword to="/app/system-overview/database/01-schema-and-tables">memories Table</Keyword>**: The primary data store for this system. Each row represents a piece of semantic information and, most importantly, contains a `vector` column with its OpenAI embedding.
+-   **<Keyword to="/app/system-overview/backend/02-api-endpoints">Backend Endpoints</Keyword>**:
+    -   `POST /api/chat`: This endpoint, as part of the <Keyword to="/app/system-overview/data-flow/01-main">End-to-End Chat Flow</Keyword>, is responsible for creating new memories when long-term memory is enabled.
+    -   `POST /api/memories/search`: This endpoint drives the <Keyword to="/app/system-overview/data-flow/01-main">Memory Search Flow</Keyword>. It takes a text query, sends it to OpenAI to get a vector, and then uses the `search_memories` function to find similar memories.
+-   **<Keyword to="/app/system-overview/database/02-sql-functions">search_memories RPC</Keyword>**: A PostgreSQL function within Supabase. This is the core of the semantic search. It takes a query embedding and uses the `pg_vector` extension to perform a cosine similarity search against the `memories` table, returning the most relevant results.
+
+---
+
+## Future Direction: The Smart Tag View
+
+The next major evolution of the Memory System is the **<Keyword to="/app/system-overview/roadmap/01-smart-tag-view">Smart Tag View</Keyword>**. This involves a more advanced memory creation process where, after a chat session, the system will:
+
+1.  **Summarize**: Create a concise summary of the conversation.
+2.  **Analyze**: Extract key entities, concepts, and themes.
+3.  **Tag**: Generate relevant tags for the summary.
+4.  **Consolidate**: Group related memories under these new, smarter tags. 

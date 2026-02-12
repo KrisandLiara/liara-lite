@@ -1,0 +1,28 @@
+# Table: `chat_sessions`
+
+This table stores metadata about each conversation.
+
+The `chat_sessions` table acts as a container for each distinct conversation a user has with Liara. It holds high-level metadata about the conversation.
+
+## Purpose
+
+Whenever a user starts a new chat, a new record is created in this table. This record provides a stable ID that can be used to group all the messages belonging to that single conversation. It separates the metadata of a chat (like its title) from the content of the chat (the messages themselves, which are in `chat_history`).
+
+## Column Breakdown
+
+| Column           | Type          | Description                                                                                             |
+|------------------|---------------|---------------------------------------------------------------------------------------------------------|
+| `id` (PK)        | `uuid`        | The unique identifier for the chat session. This is the primary key.                                    |
+| `user_id` (FK)   | `uuid`        | A foreign key that links the session to the user who owns it, referencing `auth.users`.                 |
+| `title`          | `text`        | A user-editable title for the conversation. Can be generated automatically from the first message.    |
+| `status`         | `text`        | The current state of the conversation (e.g., `active`, `archived`).                                     |
+| `created_at`     | `timestamptz` | Timestamp for when the session was first created.                                                       |
+| `updated_at`     | `timestamptz` | Timestamp for when the session was last updated, such as when its title is changed.                     |
+| `guest_session_id` | `uuid`        | A foreign key used to link sessions that were initiated by a guest user, referencing `guest_sessions`. |
+
+## Relationships
+
+- **Belongs to a `user`**: Each chat session must be owned by a user via the `user_id`.
+- **Has many `chat_history` messages**: The `id` of a `chat_sessions` record is used as the `chat_session_id` in the <Keyword to="/app/system-overview/tables/chat-history">`chat_history`</Keyword> table to group all related messages.
+
+This table is directly related to the `chat_history` table, which holds the actual messages for each session. 

@@ -1,0 +1,101 @@
+# Import Feature Overview
+
+This page summarizes the Import feature and provides a structured, single place to learn the end‑to‑end flow. From here you can jump to focused sub‑pages for each area (stages, options, tags/NER, data flow), but you’ll also find concise explanations inline so you can get productive quickly.
+
+<CardGrid>
+  <Card title="Import Pipeline UI" icon="Upload">
+    Overview of the compact 3-step workflow, token estimation, and file management.
+    [Open UI Docs](/app/system-overview/features/import-pipeline-ui)
+  </Card>
+  <Card title="Code Detection & Tagging" icon="Code2">
+    How code is detected, grouped, previewed, and safely removed with context preservation.
+    [Learn Code Tagging](/app/system-overview/features/import-code-tagging)
+  </Card>
+  <Card title="Image Detection" icon="Image">
+    How image and image-generation content is recognized and presented in the preview.
+    [Learn Image Tagging](/app/system-overview/features/import-image-tagging)
+  </Card>
+  <Card title="Import Data Flow" icon="GitBranch">
+    End-to-end sequence: parse → select → enrich → load (with diagrams).
+    [See Data Flow](/app/system-overview/data-flow/import-pipeline)
+  </Card>
+  <Card title="Importing Source JSON" icon="FileJson">
+    Use the unified selector’s “Import JSON file” to process a local conversations.json client‑side.
+    [Source JSON](/app/system-overview/features/import-json-source)
+  </Card>
+  <Card title="Stages at a Glance" icon="ListChecks">
+    Concise reference of Steps 1–4 and what happens in each stage.
+    [Stages Overview](/app/system-overview/features/import-stages)
+  </Card>
+  <Card title="Preview Options & Filters" icon="SlidersHorizontal">
+    What the toggles do (Show tags, Compact messages, Show placeholders) and filters (Has code/images/voice).
+    [Preview Options](/app/system-overview/features/import-preview-options)
+  </Card>
+  <Card title="Tags & Named Entities" icon="Tags">
+    How AI tags and NER categories are generated and visualized with scroll parity.
+    [Tags & NER](/app/system-overview/features/import-ner-overview)
+  </Card>
+</CardGrid>
+
+## Quick Start
+
+1. Open Import → Step 1. Use the unified selector to pick a Preprocessed or Enriched file, or choose “Import JSON file” to process a local export.
+2. Click Preview.
+   - If you selected a Source JSON, the browser processes it locally and opens the Preprocessed preview.
+   - If Preprocessed, the preview loads immediately.
+   - If Enriched, you’ll see the Enriched preview with Stage 3–4 bubbles.
+3. Use Preview Options (left) and Filters (right) to refine what you see.
+4. When satisfied, Enrich (Step 3) and then Load (Step 4) to the database.
+
+## Unified File Selector
+
+- Shows Preprocessed and Enriched files in one place
+- Adds a “Import JSON file” (Source) option to process a local conversations file
+- The selector appears in three places: Index page (Step 1), Preprocessed preview (Step 2–3), and Enriched preview (Step 3–4)
+- Preview button routes by type:
+  - Preprocessed → load preview by filename
+  - Enriched → enriched preview by filename
+  - Source → run client‑side processing (existing preprocessor) and open Preprocessed preview
+
+See details: [Source JSON](/app/system-overview/features/import-json-source)
+
+## Stages at a Glance
+
+Four conceptual stages organize the pipeline:
+
+- **1. Import**: Choose a file or bring a local `conversations.json` (Source). Nothing is saved yet.
+- **2. Preprocess**: Apply author filters, remove code (context preserved via placeholders), save a preprocessed file when ready.
+- **3. Enrich**: Generate tags, summaries, embeddings, optional NER (user‑only or full message set). Token estimator shows cost/time.
+- **4. Load**: Import enriched results into the memory database. In Test Mode we load into `test_memories`.
+
+For a compact reference: [Stages Overview](/app/system-overview/features/import-stages)
+
+## Preview Options & Filters
+
+Left bubble (Preview Options):
+- **Show tags**: toggles inline tag underlines and header chips
+- **Compact messages**: denser vertical spacing
+- **Show placeholders**: visualizes removed code as emerald placeholders (never counted as code)
+
+Right bubble (Filters):
+- **Has code / images / voice**: limits conversations shown to those with that content type
+
+More details: [Preview Options](/app/system-overview/features/import-preview-options)
+
+## Tags & Named Entities (NER)
+
+- **Tags**: AI-generated topical labels. Clicking a tag opens the conversation and cycles through matching messages. Literal matches get subtle colored underlines.
+- **NER**: Extracted entities by category (PERSON, ORG, LOC, DATE, PRODUCT, EVENT). In content, they render in bold with subtle glow; category‑colored tooltips show on hover. Clicking an entity also scrolls to matching messages. If a literal highlight isn’t found but the data exists, we show a transient “close match” badge.
+- **Scroll Parity**: Visual highlights match the scroll targets. Fallback hints appear only when a literal target cannot be highlighted.
+
+Learn more:
+- [Code Detection & Tagging](/app/system-overview/features/import-code-tagging)
+- [Tags & NER](/app/system-overview/features/import-ner-overview)
+
+## Notes & Tips
+
+- “Source” processing is entirely client‑side until you Save or Enrich
+- Placeholders indicate removed code but aren’t counted as “Has code”
+- Image and voice tags only scroll when those items are present (we skip messages with placeholders only)
+
+Use the links above for complete details and examples.

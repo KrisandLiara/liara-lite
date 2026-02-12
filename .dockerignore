@@ -1,0 +1,34 @@
+# Node specific
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build artifacts
+dist
+.DS_Store
+
+# IDE & OS files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Git
+.git
+.gitignore
+
+# Backend project (if frontend Dockerfile is at root)
+liara-backend/
+
+# Docker files themselves if at root
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Env files
+.env
+.env.*
+!.env.example 

@@ -1,0 +1,101 @@
+table_name,ordinal_position,column_name,data_type,is_nullable,column_default
+api_keys,1,id,uuid,NO,gen_random_uuid()
+api_keys,2,key_value,text,NO,null
+api_keys,3,name,text,NO,null
+api_keys,4,created_at,timestamp with time zone,NO,now()
+api_keys,5,last_used,timestamp with time zone,YES,null
+api_keys,6,is_active,boolean,NO,true
+api_keys,7,key_type,text,YES,null
+api_keys,8,user_id,uuid,YES,null
+api_keys,9,notes,text,YES,null
+chat_history,1,id,uuid,NO,uuid_generate_v4()
+chat_history,2,chat_session_id,uuid,NO,null
+chat_history,3,user_id,uuid,YES,null
+chat_history,4,guest_session_id,uuid,YES,null
+chat_history,5,role,text,NO,null
+chat_history,6,content,text,NO,null
+chat_history,7,created_at,timestamp with time zone,NO,now()
+chat_history,8,metadata,jsonb,YES,null
+chat_sessions,1,id,uuid,NO,gen_random_uuid()
+chat_sessions,2,user_id,uuid,YES,null
+chat_sessions,3,guest_session_id,uuid,YES,null
+chat_sessions,4,title,text,YES,null
+chat_sessions,5,status,text,NO,'active'::text
+chat_sessions,6,created_at,timestamp with time zone,NO,now()
+chat_sessions,7,updated_at,timestamp with time zone,NO,now()
+feature_flags,1,id,integer,NO,nextval('feature_flags_id_seq'::regclass)
+feature_flags,2,name,text,NO,null
+feature_flags,3,enabled,boolean,NO,false
+feature_flags,4,description,text,YES,null
+feature_flags,5,key,text,YES,null
+feature_flags,6,scope,text,NO,'global'::text
+feature_flags,7,created_at,timestamp with time zone,NO,now()
+feature_flags,8,updated_at,timestamp with time zone,NO,now()
+guest_sessions,1,id,uuid,NO,gen_random_uuid()
+guest_sessions,2,session_token,text,NO,null
+guest_sessions,3,created_at,timestamp with time zone,NO,now()
+guest_sessions,4,last_active,timestamp with time zone,NO,now()
+guest_sessions,5,converted_to_user_id,uuid,YES,null
+hard_memory_entries,1,id,uuid,NO,gen_random_uuid()
+hard_memory_entries,2,user_id,uuid,YES,null
+hard_memory_entries,3,source_chat_id,uuid,YES,null
+hard_memory_entries,4,fact,text,NO,null
+hard_memory_entries,5,topic,text,YES,null
+hard_memory_entries,6,keywords,ARRAY,YES,null
+hard_memory_entries,7,importance,integer,YES,5
+hard_memory_entries,8,pinned,boolean,YES,false
+hard_memory_entries,9,created_at,timestamp with time zone,YES,now()
+hard_memory_entries,10,updated_at,timestamp with time zone,YES,now()
+memories,1,id,uuid,NO,gen_random_uuid()
+memories,2,content,text,NO,null
+memories,3,embedding,USER-DEFINED,YES,null
+memories,4,importance,real,NO,0.5
+memories,5,timestamp,timestamp with time zone,NO,now()
+memories,6,user_id,uuid,YES,null
+memories,7,related_to,ARRAY,YES,'{}'::uuid[]
+memories,8,source,text,NO,null
+memories,9,model_version,text,YES,null
+memories,10,metadata,jsonb,YES,null
+memories,11,created_at,timestamp with time zone,NO,now()
+memories,12,updated_at,timestamp with time zone,NO,now()
+memories,13,summary,text,YES,null
+memories,14,topic,text,YES,null
+memories,15,sentiment,text,YES,null
+memories,16,type,text,YES,'semantic'::text
+memories,17,source_type,text,YES,null
+memories,18,tags,ARRAY,YES,null
+memories,19,pinned,boolean,YES,false
+memories,20,reference_links,ARRAY,YES,null
+memories,21,reference_to,uuid,YES,null
+memories,22,role,text,YES,null
+memories,23,create_time,timestamp with time zone,YES,null
+memories,24,message_id,uuid,YES,null
+memories,25,parent_id,uuid,YES,null
+memories,26,conversation_title,text,YES,null
+memories,27,conversation_start_time,timestamp with time zone,YES,null
+memories,28,source_chat_id,uuid,YES,null
+memory_relationships,1,id,uuid,NO,uuid_generate_v4()
+memory_relationships,2,source_memory_id,uuid,YES,null
+memory_relationships,3,target_memory_id,uuid,YES,null
+memory_relationships,4,relationship_type,text,NO,null
+memory_relationships,5,strength,double precision,YES,1.0
+memory_relationships,6,created_at,timestamp with time zone,YES,now()
+memory_relationships,7,metadata,jsonb,YES,null
+personality,1,id,uuid,NO,gen_random_uuid()
+personality,2,user_id,uuid,YES,null
+personality,3,aspect_type,text,NO,null
+personality,4,name,text,NO,null
+personality,5,content,text,NO,null
+personality,6,metadata,jsonb,YES,null
+personality,7,embedding,USER-DEFINED,YES,null
+personality,8,is_active,boolean,YES,true
+personality,9,created_at,timestamp with time zone,YES,now()
+personality,10,updated_at,timestamp with time zone,YES,now()
+token_usage,1,id,uuid,NO,gen_random_uuid()
+token_usage,2,user_id,uuid,YES,null
+token_usage,3,guest_session_id,uuid,YES,null
+token_usage,4,tokens_used,integer,NO,0
+token_usage,5,tokens_limit,integer,NO,1000
+token_usage,6,last_updated,timestamp with time zone,NO,now()
+user_profiles,1,id,uuid,NO,null
+user_profiles,2,username,text,YES,null

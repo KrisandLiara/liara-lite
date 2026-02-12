@@ -1,0 +1,37 @@
+---
+title: Memory Overview
+---
+
+# Memory Overview
+
+The Memory Overview provides a fast, scannable way to explore your memories using contextual facets and a keyword tag cloud. A Tag Inspector lets you dive deep on any tag to see co-facets, timelines, and representative examples.
+
+## What you can do
+
+- Filter using facets (keywords, entities, date buckets) with INCLUDE and EXCLUDE
+- Use the keyword cloud to add filters quickly
+- See facet counts rebalance to the current selection
+- Open the Tag Inspector for a tag to view:
+  - Top co‑facets across buckets
+  - Timeline (YYYY‑MM) of occurrence
+  - Source breakdown (chat vs. other)
+  - Example memories (newest first)
+
+## Interactions
+
+- Click a chip: INCLUDE
+- Shift+Click: EXCLUDE
+- Alt/Option+Click: add another INCLUDE (OR within the same bucket)
+- Press Escape to close the inspector
+
+## Performance
+
+Facet counts are precomputed with materialized views and refreshed after imports. All counts are user‑scoped.
+
+## Test vs Production
+
+When Test Mode is enabled, the overview reads from `test_hard_memory_entries` and `mv_test_hme_facet_counts`. Production mode uses `hard_memory_entries` and `mv_hme_facet_counts`.
+
+See also: [Facets & Cloud](/app/system-overview/features/memory-overview/facets-cloud) · [Tag Inspector](/app/system-overview/features/memory-overview/tag-inspector)
+
+

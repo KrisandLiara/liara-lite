@@ -1,0 +1,63 @@
+# Liara: System Overview
+
+Welcome to the Liara Knowledge Base. This is the central source of truth for understanding the Liara application, from high-level architecture to low-level implementation details.
+
+This documentation serves as both a technical reference for developers and a conceptual guide for understanding the system's behavior and design philosophy.
+
+## How This Knowledge Base is Structured
+
+This documentation is a living project, built using MDX, which allows for a rich combination of Markdown and interactive React components.
+
+-   **Interactive Diagrams**: We use Mermaid.js, wrapped in a custom `DiagramSpoiler` component, to create diagrams that explain complex workflows and architectures. Many diagrams are interactive.
+-   **Component Library**: Reusable components from the main application are used to ensure consistency.
+-   **Linked Keywords**: Key terms are highlighted and linked, like this: <Keyword to="/app/system-overview/philosophy">Liara's Philosophy</Keyword>, to provide quick access to related concepts.
+
+## High-Level Application Flow
+
+At its core, Liara facilitates a conversation between a user and an advanced AI, with a robust backend orchestrating the process.
+
+<Diagram>
+{`
+graph TD
+    subgraph User Interaction
+        A[Frontend UI]
+    end
+    subgraph Backend Services
+        B[Node.js Server]
+    end
+    subgraph Data & AI
+        C[Supabase Database]
+        D[LLM AI Service]
+    end
+
+    A --"API Request (User Message)"--> B;
+    B --"Processes message, queries DB for context"--> C;
+    B --"Sends enriched prompt to AI"--> D;
+    D --"Returns AI Response"--> B;
+    B --"Stores conversation & streams response"--> A;
+    B --"Async: Consolidates memories"--> C;
+
+`}
+</Diagram>
+
+### Core Components:
+
+1.  **Frontend**: A **React (Vite)** single-page application that provides the user interface. It communicates with the backend via a REST API. For more, see the <Keyword to="/app/system-overview/architecture/frontend">Frontend Architecture</Keyword>.
+2.  **Backend**: A **Node.js (Express)** server that handles business logic, orchestrates AI interactions, and manages the database. It's the brain of the operation. Dive deeper into the <Keyword to="/app/system-overview/backend/server-overview">Backend Overview</Keyword>.
+3.  **Database**: We use **Supabase**, which provides a **PostgreSQL** database and authentication services. It stores user data, conversations, and long-term AI memories. Explore the <Keyword to="/app/system-overview/database/01-schema-and-tables">Database Schema</Keyword>.
+4.  **AI / LLM**: The AI logic is handled by external Large Language Models. The backend prepares and sends data to these models, then processes their responses. Understand more about <Keyword to="/app/system-overview/modules/personality-engine">AI Personas</Keyword>.
+
+## Getting Started
+
+If you're new to the project, we recommend starting with the <Keyword to="/app/system-overview/architecture/application-architecture">Application Architecture</Keyword> page to get a bird's-eye view. For developers looking to set up their environment, the <Keyword to="/app/system-overview/development/dev-environment-script">Development Setup</Keyword> guide is the place to start.
+
+## Import Pipeline: Start Here
+
+The import pipeline is one of the most actively developed areas. For the full experience and diagrams:
+
+- <Keyword to="/app/system-overview/features/import-pipeline-ui">Import Pipeline UI</Keyword>
+- <Keyword to="/app/system-overview/features/import-code-tagging">Code Detection & Tagging</Keyword>
+- <Keyword to="/app/system-overview/data-flow/import-pipeline">Import Pipeline Data Flow</Keyword>
+- <Keyword to="/app/system-overview/features/import-json-source">Importing Source JSON</Keyword>
+
+If you are interested in how to contribute or maintain this documentation, please read our **<Keyword to="/app/system-overview/development/database-workflow">Database Workflow</Keyword>** guide, as it contains instructions on keeping our schema documentation up-to-date. 

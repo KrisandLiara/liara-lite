@@ -1,0 +1,46 @@
+# Personality Engine
+
+This document describes the design of the Personality Engine.
+
+The Personality Engine is the module that gives Liara her character. It controls her conversational style, tone, and core instructions by dynamically constructing the **system prompt** that is sent to the AI at the start of every conversation.
+
+## Core Components
+
+<Diagram>{`
+graph TD;
+    subgraph "Frontend"
+        A["/app/personality Page"]
+    end
+
+    subgraph "Backend (Node.js)"
+        B["/api/chat Endpoint"]
+    end
+
+    subgraph "Database (Supabase)"
+        C[system_prompts Table]
+    end
+
+    subgraph "External Services"
+        D[OpenAI API]
+    end
+
+    A -- "Saves custom prompt" --> C;
+    B -- "Reads prompt" --> C;
+    B -- "Sends prompt + message" --> D;
+
+    style A fill:#2E4053,stroke:#3498DB,stroke-width:2px,color:#fff
+    style B fill:#17202A,stroke:#3498DB,stroke-width:2px,color:#fff
+    style C fill:#1C2833,stroke:#3498DB,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#fff,stroke-width:1.5px,color:#fff
+`}</Diagram>
+
+-   **<Keyword to="/app/system-overview/tables/system_prompts">system_prompts Table</Keyword>**: This is the data store for all personality-related information. It holds the content for the core system prompts. Rows can be global (where `user_id` is NULL) or user-specific, allowing for personalization. See the "System Prompt Architecture" section on the main overview page for more detail.
+
+-   **<Keyword>/app/personality Page</Keyword>**: A page in the frontend application that allows users to view and edit their own custom system prompt. This provides a powerful way for a user to tailor Liara's personality to their own needs.
+
+-   **Backend API (`/api/chat`)**: This is where the engine's logic is executed. Before calling the OpenAI API, this Express route handler queries the `system_prompts` table.
+    1.  It first looks for a user-specific prompt for the authenticated user.
+    2.  If no user-specific prompt is found, it falls back to the global default prompt.
+    3.  The content of the fetched prompt is used as the `system` message in the request to OpenAI, effectively setting the context and instructions for the entire conversation.
+
+This modular approach allows Liara's personality to be easily updated and customized without changing any of the core application code. 

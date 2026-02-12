@@ -1,0 +1,53 @@
+# Debugging & Logs
+
+This guide provides tips and instructions for debugging the different components of the Liara application.
+
+## Accessing Logs
+
+When you run `npm run liara:dev`, the output from the frontend server, backend server, and Supabase services are all streamed to a single terminal. To make this manageable, each line is prefixed with the name of the process that generated it (e.g., `[frontend]`, `[backend]`).
+
+**Example Log Output:**
+```log
+[backend]    | Server listening on port 8000
+[frontend]   | VITE v4.4.9  ready in 780 ms
+[supabase]   | Applying migration 20231026120000_initial_schema.sql...
+```
+
+To debug a specific service, you should focus on the lines prefixed with its name.
+
+## Frontend Debugging
+
+For frontend issues (UI bugs, state management problems):
+1.  Open your browser's developer tools (usually `F12` or `Ctrl+Shift+I`).
+2.  Use the **Console** tab to check for errors and log messages.
+3.  Use the **Components** tab (if you have the React DevTools extension) to inspect the component hierarchy and their state/props.
+4.  Use the **Network** tab to inspect API requests being made to the backend.
+
+## Backend Debugging (VS Code)
+
+To debug the backend Node.js server, it's recommended to use the VS Code debugger.
+
+1.  **Stop `liara:dev`**: If the main script is running, stop it with `Ctrl+C`.
+2.  **Start Services Individually**:
+    *   In one terminal, run `supabase start`.
+    *   In another terminal, navigate to `liara-backend` and run `npm run dev` to start the backend server.
+3.  **Configure the Debugger**: Create a `launch.json` file inside a `.vscode` directory in the *root* of the project with the following configuration:
+    ```json
+    {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "type": "node",
+                "request": "attach",
+                "name": "Attach to Backend",
+                "port": 9229, // Default inspect port
+                "restart": true,
+                "skipFiles": ["<node_internals>/**"]
+            }
+        ]
+    }
+    ```
+4.  **Start Debugging**: Go to the "Run and Debug" panel in VS Code (`Ctrl+Shift+D`), select "Attach to Backend" from the dropdown, and press `F5`. The debugger will attach to the running `nodemon` process.
+5.  You can now set breakpoints directly in the backend TypeScript code in VS Code.
+
+-data coming- 

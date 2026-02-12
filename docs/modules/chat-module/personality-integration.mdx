@@ -1,0 +1,38 @@
+# Personality Integration
+
+Personality is what makes Liara more than just a question-and-answer machine. It's a combination of a core set of instructions and dynamic context that defines her character, tone, and decision-making process.
+
+The live, editable version of Liara's core personality prompt can be found at <Keyword to="/app/personality">/app/personality</Keyword>. This page is Liara's "home," where her fundamental identity is shaped.
+
+## Current Implementation & Future Plans
+
+Currently, Liara's personality is defined by a master "System Prompt." This is a large text document that sets out her goals, her ethical boundaries, how she should behave, and what her name is.
+
+The long-term vision is to evolve this into a more complex system of **LLM Agents**, where Liara can be equipped with different "personas" or specialized agents for specific tasks. This documentation will be updated as that work progresses.
+
+## Prompt Assembly Layers
+
+The final prompt sent to the LLM is not just the user's message. It's a carefully assembled "sandwich" of different layers of context, with the core personality at its base.
+
+<Diagram>
+{`
+graph TD
+    subgraph "Prompt Construction"
+        A["Core Personality Prompt<br/><i>(From /app/personality)</i>"]
+        B["User-Specific Data<br/><i>(e.g., preferences, name)</i>"]
+        C["Long-Term Memories<br/><i>(From Semantic Search)</i>"]
+        D["Short-Term Context<br/><i>(Recent chat history)</i>"]
+        E["User's Latest Message"]
+
+        A --> B --> C --> D --> E
+    end
+
+    E --> F{Final Prompt Sent to LLM}
+
+    style A fill:#4a235a,stroke:#fff,stroke-width:2px,color:#fff
+`}
+</Diagram>
+
+This layered approach ensures that Liara has a consistent core personality while also being able to adapt to the specific user and the immediate context of the conversation.
+
+-data coming- 

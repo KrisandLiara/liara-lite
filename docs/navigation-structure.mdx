@@ -1,0 +1,167 @@
+# Documentation Navigation Structure
+
+This document outlines the improved organization of the Liara documentation system.
+
+## 📚 **Main Categories**
+
+### 1. **Project Overview** (`/docs/project/`)
+- **Overview** - High-level project description and goals
+- **System Status** - Current state and health metrics
+- **Planned Features** - Roadmap and upcoming development
+
+### 2. **Architecture** (`/docs/architecture/`)
+- **System Components** - High-level architecture overview
+- **Data Flow** - How data moves through the system
+- **Component Diagrams** - Visual system representations
+- **Deployment** - Infrastructure and hosting details
+
+### 3. **Features** (`/docs/features/`)
+- **Import Pipeline UI** - Comprehensive import system documentation
+- **Memory System** - Semantic memory and storage features
+- **Chat Interface** - Conversation and interaction features
+
+### 4. **Backend** (`/docs/backend/`)
+- **Server Overview** - Express.js backend architecture
+- **API Endpoints** - REST API documentation
+- **Authentication** - JWT and security middleware
+- **Database Integration** - Supabase connection and queries
+
+### 5. **Database** (`/docs/database/`)
+- **Schema & Tables** - Complete database structure
+- **SQL Functions** - Custom database functions
+- **RLS Policies** - Row Level Security implementation
+- **Migration History** - Database change tracking
+
+### 6. **Development** (`/docs/development/`)
+- **Environment Setup** - Local development configuration
+- **CLI Tools & Scripts** - Development utilities
+- **Documentation Workflow** - How to contribute to docs
+- **Debugging & Logs** - Troubleshooting guides
+
+### 7. **Data Flow** (`/docs/data-flow/`)
+- **Chat Session Flow** - Message handling and storage
+- **Memory Save Flow** - How memories are created and stored
+- **Semantic Recall Flow** - Search and retrieval processes
+
+### 8. **Philosophy** (`/docs/philosophy/`)
+- **Cognitive Assistant Model** - Liara's design principles
+- **Ethical Boundaries** - AI ethics and limitations
+- **Purpose & Goals** - Long-term vision and mission
+
+### 9. **Recent Work** (`/docs/project/recent-work`)
+- **Implementation Summaries** - Detailed development logs and feature breakdowns
+- **Technical Deep-Dives** - Comprehensive implementation details
+- **Architecture Decisions** - Rationale behind major technical choices
+- **Historical Context** - Evolution of features and systems over time
+
+## 🔗 **Cross-Reference Strategy**
+
+### **Recent Work → Feature Documentation**
+Each entry in `recent-work.mdx` should link to relevant feature documentation:
+- Implementation summaries reference detailed technical docs
+- Feature updates link to updated documentation sections
+- Bug fixes reference troubleshooting guides
+
+### **Feature Documentation → Implementation Details**
+Feature docs should reference recent work entries:
+- "See Recent Work: [Feature Name] for implementation details"
+- Links to specific sections in recent-work.mdx
+- Technical deep-dives reference development logs
+
+### **Architecture → Implementation**
+Architecture docs should connect to:
+- Recent refactoring efforts in recent work
+- Specific feature implementations
+- Development decision rationales
+
+## 📝 **Documentation Standards**
+
+### **Recent Work Entries Format:**
+```markdown
+## [Feature Name] (v0.X.X)
+
+**Date**: [Date]
+
+[Brief description of what was implemented]
+
+### 🎯 **Features Implemented:**
+- Bullet points of major features
+
+### 🎨 **User Experience Enhancements:**
+- UI/UX improvements
+
+### 🔧 **Technical Implementation:**
+- Code examples and technical details
+
+### 📊 **Impact & Benefits:**
+- What this achieves for users and developers
+```
+
+### **Feature Documentation Format:**
+```markdown
+# [Feature Name]
+
+## Overview
+Brief description and purpose
+
+## User Guide
+How to use the feature
+
+## Technical Details
+Implementation specifics
+
+## API Reference
+Endpoints and interfaces
+
+## Recent Updates
+Link to recent-work.mdx entries
+```
+
+## 🎯 **Benefits of This Structure**
+
+1. **Discoverability** - Clear categories make finding information easier
+2. **Cross-Reference** - Links between different types of documentation
+3. **Maintenance** - Easier to keep documentation current and accurate
+4. **Onboarding** - New developers can follow logical learning paths
+5. **Historical Context** - Recent work provides implementation context for features
+
+## 🚀 **Implementation Plan**
+
+1. **Phase 1**: Update existing documentation to follow new structure
+2. **Phase 2**: Add cross-references between recent work and feature docs
+3. **Phase 3**: Create navigation improvements in the UI
+4. **Phase 4**: Establish documentation maintenance workflows
+
+## 📝 **Workflow for Future Implementations**
+
+### **For Each Major/Minor Feature Implementation:**
+
+1. **During Development**: Take notes on key decisions, challenges, and solutions
+2. **After Completion**: Create comprehensive summary using the standard format
+3. **Add to Recent Work**: Place new entry at the top of `docs/project/recent-work.mdx`
+4. **Update Changelog**: Add concise version to `src/pages/SystemOverview/changelog.ts`
+5. **Cross-Reference**: Link from relevant feature documentation to recent work entry
+6. **Version Increment**: Update version number to reflect the scope of changes
+
+### **Standard Entry Format:**
+```markdown
+## [Feature Name] (v0.X.X)
+
+**Date**: [Date]
+
+[Brief description of what was implemented]
+
+### 🎯 **Features Implemented:**
+- Bullet points of major features
+
+### 🎨 **User Experience Enhancements:**
+- UI/UX improvements
+
+### 🔧 **Technical Implementation:**
+- Code examples and technical details
+
+### 📊 **Impact & Benefits:**
+- What this achieves for users and developers
+```
+
+This ensures that every significant implementation gets properly documented with full technical context preserved for future reference. 
